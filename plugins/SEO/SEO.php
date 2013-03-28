@@ -14,6 +14,28 @@
  */
 class Piwik_SEO extends Piwik_Plugin
 {
+	const GOOGLE_PAGE_RANK_METRIC_NAME = 'ggl_page_rank';
+	const GOOGLE_INDEXED_PAGE_COUNT = 'ggl_indexed_pages';
+	const ALEXA_RANK_METRIC_NAME = 'alexa_rank';
+	const DMOZ_METRIC_NAME = 'dmoz';
+	const BING_INDEXED_PAGE_COUNT = 'bing_indexed_pages';
+	const BACKLINK_COUNT = 'backlinks';
+	const REFERRER_DOMAINS_COUNT = 'referrer_domains';
+	
+	const DONE_ARCHIVE_NAME = 'SEO_done'; // TODO docs
+	
+	public static $seoMetrics = array(
+		self::GOOGLE_PAGE_RANK_METRIC_NAME,
+		self::GOOGLE_INDEXED_PAGE_COUNT,
+		self::ALEXA_RANK_METRIC_NAME,
+		self::DMOZ_METRIC_NAME,
+		self::BING_INDEXED_PAGE_COUNT,
+		self::BACKLINK_COUNT,
+		self::REFERRER_DOMAINS_COUNT
+	);
+	
+	const SITE_BIRTH_OPTION_PREFIX = 'site_birth_';
+	
 	public function getInformation()
 	{
 		return array(
@@ -26,12 +48,110 @@ class Piwik_SEO extends Piwik_Plugin
 	
 	function getListHooksRegistered()
 	{
-		$hooks = array( 'WidgetsList.add' => 'addWidgets' );
+		$hooks = array('WidgetsList.add' => 'addWidgets',
+					   'TaskScheduler.getScheduledTasks' => 'getScheduledTasks',
+					   'Archive.getPluginOfMetric' => 'getPluginOfMetric');
 		return $hooks;
 	}	
 	
 	function addWidgets()
 	{
 		Piwik_AddWidget('SEO', 'SEO_SeoRankings', 'SEO', 'getRank');
+	}
+	
+	public function getPluginOfMetric( $notification )
+	{
+		$pluginName =& $notification->getNotificationObject();
+		$metricName = $notification->getNotificationInfo();
+		
+		if ($pluginName === false
+			&& (in_array($metricName, self::$seoMetrics)
+				|| $metricName == self::DONE_ARCHIVE_NAME))
+		{
+			$pluginName = 'SEO';
+		}
+	}
+	
+	public function getScheduledTasks( $notification )
+	{
+		$tasks = &$notification->getNotificationObject();
+		
+		// TODO: explain priority
+		$archiveSEOStats = new Piwik_ScheduledTask(
+			$this, 'archiveSEOStats', null, new Piwik_ScheduledTime_Daily(), Piwik_ScheduledTask::HIGH_PRIORITY
+		);
+		
+		$tasks[] = $archiveSEOStats;
+	}
+	
+	public function archiveSEOStats()
+	{
+		$allIdSites = Piwik_SitesManager_API::getInstance()->getAllSitesId();
+		foreach ($allIdSites as $idSite)
+		{
+			self::archiveSEOStatsFor($idSite);
+		}
+	}
+	
+	/**
+	 * TODO
+	 * TODO: doing one site at a time is a big no-no, WAY TOO INEFFICIENT
+	 */
+	public static function archiveSEOStatsFor( $idSite )
+	{
+		$today = Piwik_Date::factory('today');
+		
+		$oPeriod = Piwik_Period::factory('day', $today);
+		
+		$archive = Piwik_Archive::build($idSite, 'day', 'today');
+		$archive->setRequestedReport('SEO_Metrics');
+		$archive->prepareArchive();
+		$archive->setIdArchive(Piwik_ArchiveProcessing::TIME_OF_DAY_INDEPENDENT);
+		
+		$isArchivingDone = $archive->getNumeric(self::DONE_ARCHIVE_NAME, $checkIfVisits = false);
+		if ($isArchivingDone != 0)
+		{
+			return false; // do not perform any HTTP requests if the archiving process is finished
+		}
+		
+		$archiveProcessing = $archive->archiveProcessing;
+
+		$siteUrl = Piwik_Site::getMainUrlFor($idSite);// TODO (have to check alias URLs and other domains?)
+		
+		$rank = new Piwik_SEO_RankChecker($siteUrl);
+		$statNamesToGetters = array(
+			self::GOOGLE_PAGE_RANK_METRIC_NAME => 'getPageRank',
+			self::GOOGLE_INDEXED_PAGE_COUNT => 'getIndexedPagesGoogle',
+			self::ALEXA_RANK_METRIC_NAME => 'getAlexaRank',
+			self::DMOZ_METRIC_NAME => 'getDmoz',
+			self::BING_INDEXED_PAGE_COUNT => 'getIndexedPagesBing',
+			self::BACKLINK_COUNT => 'getExternalBacklinkCount',
+			self::REFERRER_DOMAINS_COUNT => 'getReferrerDomainCount',
+		);
+		// TODO: how to not use too many majestic API requests? need to use bulk request format.
+		
+		$stats = array();
+		foreach ($statNamesToGetters as $statName => $rankCheckerMethodName)
+		{
+			$stats[$statName] = call_user_func(array($rank, $rankCheckerMethodName));
+		}
+		
+		foreach ($stats as $archiveName => $archiveValue)
+		{
+			$archiveProcessing->insertNumericRecord($archiveName, $archiveValue);
+		}
+		$archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
+		
+		Piwik_SEO_API::getInstance()->getSiteBirthTime($idSite); // will cache if not already cached
+		
+		return $stats;
+	}
+	
+	/**
+	 * TODO
+	 */
+	public static function getSiteBirthOptionName( $idSite )
+	{
+		return self::SITE_BIRTH_OPTION_PREFIX.$idSite;
 	}
 }

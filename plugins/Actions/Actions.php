@@ -17,7 +17,25 @@
  * @package Piwik_Actions
  */
 class Piwik_Actions extends Piwik_Plugin
-{
+{	
+	/**
+	 * Metrics calculated and archived by the Actions plugin.
+	 * 
+	 * @var array
+	 */
+	public static $actionsMetrics = array(
+		'nb_pageviews',
+		'nb_uniq_pageviews',
+		'nb_downloads',
+		'nb_uniq_downloads',
+		'nb_outlinks',
+		'nb_uniq_outlinks',
+		'nb_searches',
+		'nb_keywords',
+		'nb_hits',
+		'nb_hits_following_search',
+	);
+
 	public function getInformation()
 	{
 		$info = array(
@@ -39,8 +57,24 @@ class Piwik_Actions extends Piwik_Plugin
 			'Menu.add' => 'addMenus',
 			'API.getReportMetadata' => 'getReportMetadata',
 			'API.getSegmentsMetadata' => 'getSegmentsMetadata',
+			'Archive.getPluginOfMetric' => 'getPluginOfMetric'
 		);
 		return $hooks;
+	}
+	
+	/**
+	 * TODO
+	 */
+	public function getPluginOfMetric( $notification )
+	{
+		$pluginName =& $notification->getNotificationObject();
+		$metricName = $notification->getNotificationInfo();
+		
+		if ($pluginName === false
+			&& in_array($metricName, self::$actionsMetrics))
+		{
+			$pluginName = 'Actions';
+		}
 	}
 
 	/**

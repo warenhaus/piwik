@@ -59,6 +59,9 @@ abstract class Piwik_ArchiveProcessing
 	 */
 	const PREFIX_SQL_LOCK = "locked_";
 	
+	// TODO docs
+	const TIME_OF_DAY_INDEPENDENT = 0;
+	
 	/**
 	 * Idarchive in the DB for the requested archive
 	 *
@@ -312,6 +315,11 @@ abstract class Piwik_ArchiveProcessing
 	public function getIdArchive()
 	{
 		return $this->idArchive;
+	}
+	
+	public function setIdArchive( $idArchive ) // TODO: only one value is really allowed here, 0. switch to setIsTimeIndependent or something?
+	{
+		$this->idArchive = $idArchive;
 	}
 	
 	/**
@@ -1089,5 +1097,4 @@ abstract class Piwik_ArchiveProcessing
 				|| !Piwik_PluginsManager::getInstance()->isPluginLoaded($pluginBeingProcessed)
 				; 
 	}
-	
 }

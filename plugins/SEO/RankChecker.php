@@ -140,7 +140,7 @@ class Piwik_SEO_RankChecker
      *
      * @return int
      */
-    public function getAge()
+    public function getAge( $prettyFormatAge = true )
     {
         $ageArchiveOrg = $this->_getAgeArchiveOrg();
         $ageWhoIs = $this->_getAgeWhoIs();
@@ -167,7 +167,8 @@ class Piwik_SEO_RankChecker
         }
 
         if ($maxAge) {
-            return Piwik::getPrettyTimeFromSeconds(time() - $maxAge);
+        	$maxAge = time() - $maxAge;
+            return $prettyFormatAge ? Piwik::getPrettyTimeFromSeconds($maxAge) : $maxAge;
         }
         return false;
     }

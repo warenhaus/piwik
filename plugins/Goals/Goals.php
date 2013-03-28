@@ -85,8 +85,24 @@ class Piwik_Goals extends Piwik_Plugin
 			'Menu.add' => 'addMenus',
 			'SitesManager.deleteSite' => 'deleteSiteGoals',
 			'Goals.getReportsWithGoalMetrics' => 'getActualReportsWithGoalMetrics',
+			'Archive.getPluginOfMetric' => 'getPluginOfMetric',
 		);
 		return $hooks;
+	}
+	
+	/**
+	 * TODO
+	 */
+	public function getPluginOfMetric( $notification )
+	{
+		$pluginName =& $notification->getNotificationObject();
+		$metricName = $notification->getNotificationInfo();
+		
+		if ($pluginName === false
+			&& strpos($metricName, 'Goal_') === 0)
+		{
+			$pluginName = 'Goals';
+		}
 	}
 
 	/**

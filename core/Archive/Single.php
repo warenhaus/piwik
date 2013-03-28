@@ -132,6 +132,15 @@ class Piwik_Archive_Single extends Piwik_Archive
 	}
 	
 	/**
+	 * TODO
+	 */
+	public function setIdArchive( $idArchive )
+	{
+		$this->idArchive = $idArchive;
+		$this->archiveProcessing->setIdArchive($idArchive);
+	}
+	
+	/**
 	 * Set the period 
 	 *
 	 * @param Piwik_Period $period
@@ -259,7 +268,7 @@ class Piwik_Archive_Single extends Piwik_Archive
 	 * @param string|bool   $archivedDate  Value to store date of archive info in. If false, not stored.
 	 * @return mixed|bool  false if no result
 	 */
-	protected function get( $name, $typeValue = 'numeric', &$archivedDate = false )
+	protected function get( $name, $typeValue = 'numeric', &$archivedDate = false, $checkIfVisits = true )
 	{
 	   	$this->setRequestedReport($name);
 	   	$this->prepareArchive();
@@ -286,7 +295,8 @@ class Piwik_Archive_Single extends Piwik_Archive
 			return $this->idArchive;
 		}
 		
-		if(!$this->isThereSomeVisits)
+		if (!$this->isThereSomeVisits
+			&& $checkIfVisits)
 		{
 			return false;
 		}
@@ -303,13 +313,19 @@ class Piwik_Archive_Single extends Piwik_Archive
 				$table = $this->archiveProcessing->getTableArchiveNumericName();
 			break;
 		}
+		// TODO: check for other instances of 'idArchive = ?' ?
+		$sql = "SELECT value, ts_archived
+				  FROM $table
+				 WHERE idarchive = ? AND name = ?";
+		$bind = array($this->idArchive, $name);
+		if ($this->idArchive == Piwik_ArchiveProcessing::TIME_OF_DAY_INDEPENDENT)
+		{
+			$sql .= " AND idsite = ?";
+			$bind[] = $this->getSite()->getId();
+		}
 
 		$db = Zend_Registry::get('db');
-		$row = $db->fetchRow("SELECT value, ts_archived
-								FROM $table
-								WHERE idarchive = ? AND name = ?",
-								array( $this->idArchive , $name) 
-							);
+		$row = $db->fetchRow($sql, $bind);
 
 		$value = $tsArchived = false;
 		if (is_array($row))
@@ -452,13 +468,13 @@ class Piwik_Archive_Single extends Piwik_Archive
 	
 	/**
 	 * Returns a numeric value from this Archive, with the name '$name'
-	 *
+	 *TODO modify
 	 * @param string $name
 	 * @return int|float
 	 */
-	public function getNumeric( $name )
+	public function getNumeric( $name, $checkIfVisits = true )
 	{
-		return $this->formatNumericValue( $this->get($name, 'numeric') );
+		return $this->formatNumericValue( $this->get($name, 'numeric', $archivedDate = false, $checkIfVisits) );
 	}
 
 	
@@ -488,10 +504,10 @@ class Piwik_Archive_Single extends Piwik_Archive
 	 *					); 
 	 *
 	 * @param string|array $fields Name or array of names of Archive fields 
-	 * 
+	 * TODO change doc
 	 * @return Piwik_DataTable_Simple
 	 */
-	public function getDataTableFromNumeric( $fields )
+	public function getDataTableFromNumeric( $fields, $formatResult = true )
 	{
 		if(!is_array($fields))
 		{
@@ -501,7 +517,14 @@ class Piwik_Archive_Single extends Piwik_Archive
 		$values = array();
 		foreach($fields as $field)
 		{
-			$values[$field] = $this->getNumeric($field);
+			if ($formatResult)
+			{
+				$values[$field] = $this->getNumeric($field);
+			}
+			else
+			{
+				$values[$field] = $this->get($field, 'numeric', $archiveDate = false, $checkIfVisits = false);
+			}
 		}
 		
 		$table = new Piwik_DataTable_Simple();
@@ -608,24 +631,15 @@ class Piwik_Archive_Single extends Piwik_Archive
 		{
 			return 'VisitsSummary_CoreMetrics';
 		}
-		// VisitFrequency metrics don't follow the same naming convention (HACK) 
-		if(strpos($metric, '_returning') > 0
-			// ignore Goal_visitor_returning_1_1_nb_conversions 
-			&& strpos($metric, 'Goal_') === false)
+		
+		$pluginName = false;
+		Piwik_PostEvent('Archive.getPluginOfMetric', $pluginName, $metric);
+		
+		if ($pluginName !== false)
 		{
-			return 'VisitFrequency_Metrics';
+			return $pluginName.'_Metrics';
 		}
-		// Goal_* metrics are processed by the Goals plugin (HACK)
-		if(strpos($metric, 'Goal_') === 0)
-		{
-			return 'Goals_Metrics';
-		}
-		// Actions metrics are processed by the Actions plugin (HACK) (3RD HACK IN FACT) (YES, THIS IS TOO MUCH HACKING)
-		// (FIXME PLEASE).
-		if (in_array($metric, Piwik_Archive::$actionsMetrics))
-		{
-			return 'Actions_Metrics';
-		}
+		
 		return $metric;
 	}
 	

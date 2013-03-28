@@ -155,24 +155,6 @@ abstract class Piwik_Archive
 				'sum_daily_nb_uniq_visitors' => Piwik_Archive::INDEX_SUM_DAILY_NB_UNIQ_VISITORS,
 	);
 	
-	/**
-	 * Metrics calculated and archived by the Actions plugin.
-	 * 
-	 * @var array
-	 */
-	public static $actionsMetrics = array(
-		'nb_pageviews',
-		'nb_uniq_pageviews',
-		'nb_downloads',
-		'nb_uniq_downloads',
-		'nb_outlinks',
-		'nb_uniq_outlinks',
-		'nb_searches',
-		'nb_keywords',
-		'nb_hits',
-		'nb_hits_following_search',
-	);
-	
 	const LABEL_ECOMMERCE_CART = 'ecommerceAbandonedCart';
 	const LABEL_ECOMMERCE_ORDER = 'ecommerceOrder';
 	
