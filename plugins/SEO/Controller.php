@@ -45,6 +45,20 @@ class Piwik_SEO_Controller extends Piwik_Controller
 		$renderer->setSerialize(false);
 		$view->ranks = $renderer->render($dataTable);
 		$view->prettyDate = Piwik_Date::factory($date)->getLocalized('%shortMonth% %day%');
+		
+		$seoLabels = array();
+		foreach ($view->ranks as $row)
+		{
+			if ($row['id'] !== 'domain-age')
+			{
+				$seoLabels[] = urlencode($row['label']);
+			}
+		}
+		
+		$seoLabels = implode(',', $seoLabels);
+		$popoverParam = 'RowAction:RowEvolution:SEO.getSEOStats:value:'.urlencode($seoLabels);
+		$view->popoverParam = urlencode($popoverParam);
+		
 		echo $view->render();
 	}
 }

@@ -48,11 +48,27 @@ class Piwik_SEO extends Piwik_Plugin
 	
 	function getListHooksRegistered()
 	{
-		$hooks = array('WidgetsList.add' => 'addWidgets',
-					   'TaskScheduler.getScheduledTasks' => 'getScheduledTasks',
-					   'Archive.getPluginOfMetric' => 'getPluginOfMetric');
+		$hooks = array(
+			'WidgetsList.add' => 'addWidgets',
+			'TaskScheduler.getScheduledTasks' => 'getScheduledTasks',
+			'Archive.getPluginOfMetric' => 'getPluginOfMetric',
+			'API.getReportMetadata' => 'getReportMetadata',
+		);
 		return $hooks;
 	}	
+	
+	public function getReportMetadata($notification)
+	{
+		$reports = &$notification->getNotificationObject();
+		$reports[] = array(
+			'category' => 'SEO',
+			'name' => Piwik_Translate('SEO_SeoRankings'),
+			'module' => 'SEO',
+			'action' => 'getSEOStats',
+			'dimension' => Piwik_Translate('General_Value'),
+			'order' => 1
+		);
+	}
 	
 	function addWidgets()
 	{

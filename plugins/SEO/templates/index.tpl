@@ -1,4 +1,4 @@
-<div id='SeoRanks'>
+<div id='seo-ranks'>
 	<script type="text/javascript" src="plugins/SEO/templates/rank.js"></script>
 	
 	<div style="padding: 8px;" >
@@ -33,6 +33,25 @@
 	   </div>
 	</form>
 	<div id="seo-widget-footer" class="form-description" style="text-align:center;margin-top:1em">
-		{'SEO_ShowingStatsFor'|translate:$prettyDate}
+		{'SEO_ShowingStatsFor'|translate:$prettyDate} <a class="row-evolution-link" title="View evolution of SEO statistics for this site" data-popover="{$popoverParam}">
+			<img src="themes/default/images/row_evolution.png"/>
+			<img src="themes/default/images/row_evolution_hover.png" style="display:none"/>
+		</a>
 	</div>
 </div>
+{literal}
+<script type="text/javascript">
+$(document).ready(function() {
+	var rowEvolutionLink = $('#seo-ranks .row-evolution-link'),
+		popoverUrl = window.location.href + '&debug=1&popover=' + rowEvolutionLink.attr('data-popover');
+	
+	rowEvolutionLink.hover(
+		function() {
+			$('img', this).each(function() {
+				$(this).toggle();
+			});
+		}
+	).attr('href', popoverUrl);
+});
+</script>
+{/literal}
