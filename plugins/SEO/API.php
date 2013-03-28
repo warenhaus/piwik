@@ -61,10 +61,14 @@ class Piwik_SEO_API
 		$archive->prepareArchive();
 		$archive->setIdArchive(Piwik_ArchiveProcessing::TIME_OF_DAY_INDEPENDENT);
 		
+		$todayStr = Piwik_Date::factory('now', Piwik_Site::getTimezoneFor($idSite))->toString();
+		
+		$doneMetricName = Piwik_SEO::getMetricArchiveName(Piwik_SEO::DONE_ARCHIVE_NAME, $idSite, $todayStr);
+		
 		// if archive not created and date is today, do the HTTP requests
-		$isArchivingDone = $archive->getNumeric(Piwik_SEO::DONE_ARCHIVE_NAME, $checkIfVisits = false);
+		$isArchivingDone = $archive->getNumeric($doneMetricName, $checkIfVisits = false);
 		if ($isArchivingDone == 0
-			&& Piwik_Date::factory($date) == Piwik_Date::factory('today'))
+			&& $date == $todayStr)
 		{
 			$stats = Piwik_SEO::archiveSEOStatsFor($idSite);
 			
@@ -88,7 +92,13 @@ class Piwik_SEO_API
 				Piwik_SEO::BING_INDEXED_PAGE_COUNT,
 				Piwik_SEO::BACKLINK_COUNT,
 				Piwik_SEO::REFERRER_DOMAINS_COUNT
-			);// TODO: if I remove $formatResult, everything is returned as 0. that makes no bloody sense.
+			);
+			foreach ($seoMetrics as &$name)
+			{
+				$name = Piwik_SEO::getMetricArchiveName($name, $idSite, $date);
+			}
+			
+			// TODO: if I remove $formatResult, everything is returned as 0. that makes no bloody sense.
 			$table = $archive->getDataTableFromNumeric($seoMetrics, $formatResult = false);
 		
 			$result = new Piwik_DataTable();
@@ -115,6 +125,10 @@ class Piwik_SEO_API
 												  'value' => $siteBirth)
 		));
 		$result->addRow($row);
+		
+		// clean labels
+		$cleanSEOMetricArchiveName = array('Piwik_SEO_API', 'cleanSEOMetricArchiveName');
+		$result->filter('ColumnCallbackReplace', array('label', $cleanSEOMetricArchiveName));
 		
 		// set metadata for individual rows
 		$googleLogo = Piwik_getSearchEngineLogoFromUrl('http://google.com');
@@ -177,6 +191,15 @@ class Piwik_SEO_API
 		$result->filter('ColumnCallbackReplace', array('label', $translateSeoMetricName, array($seoMetricTranslations)));
 		
 		return $result;
+	}
+	
+	/**
+	 * TODO (move + docs)
+	 */
+	public static function cleanSEOMetricArchiveName( $label )
+	{
+		$parts = explode('-', $label);
+		return reset($parts);
 	}
 	
 	/**

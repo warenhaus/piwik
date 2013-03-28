@@ -880,10 +880,9 @@ abstract class Piwik_ArchiveProcessing
 		}
 		
 		// duplicate idarchives are Ignored, see http://dev.piwik.org/trac/ticket/987
-		
 		$query = "INSERT IGNORE INTO ".$table->getTableName()." 
-					(". implode(", ", $this->getInsertFields()).")
-					VALUES (?,?,?,?,?,?,?,?)";
+ (". implode(", ", $this->getInsertFields()).")
+ VALUES (?,?,?,?,?,?,?,?)";
 		$bindSql = $this->getBindArray();
 		$bindSql[] = $name;
 		$bindSql[] = $value;

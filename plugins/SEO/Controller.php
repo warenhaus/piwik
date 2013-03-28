@@ -27,13 +27,13 @@ class Piwik_SEO_Controller extends Piwik_Controller
 		
 		$url = $site->getMainUrl(); // TODO: remove $url and url text entry in UI
 		
-		$today = Piwik_Date::today()->toString();
+		$today = Piwik_Date::factory('now', $site->getTimezone())->toString();
 		
 		$date = Piwik_Common::getRequestVar('date', $today, 'string');
 		$period = Piwik_Common::getRequestVar('period', 'day', 'string');
 		if ($period == 'day')
 		{
-			$date = Piwik_Date::factory('today')->toString();
+			$date = $today;
 		}
 		
 		$dataTable = Piwik_SEO_API::getInstance()->getSEOStats($idSite, 'day', $date);

@@ -314,14 +314,18 @@ class Piwik_Archive_Single extends Piwik_Archive
 			break;
 		}
 		// TODO: check for other instances of 'idArchive = ?' ?
+		// TODO: need to check for date/period as well.
 		$sql = "SELECT value, ts_archived
 				  FROM $table
 				 WHERE idarchive = ? AND name = ?";
 		$bind = array($this->idArchive, $name);
 		if ($this->idArchive == Piwik_ArchiveProcessing::TIME_OF_DAY_INDEPENDENT)
 		{
-			$sql .= " AND idsite = ?";
+			$sql .= " AND idsite = ? AND date1 = ? AND date2 = ? AND period = ?";
 			$bind[] = $this->getSite()->getId();
+			$bind[] = $this->period->getDateStart()->toString();
+			$bind[] = $this->period->getDateEnd()->toString();
+			$bind[] = $this->period->getId();
 		}
 
 		$db = Zend_Registry::get('db');

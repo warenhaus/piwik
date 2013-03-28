@@ -64,6 +64,9 @@ class Piwik_SEO extends Piwik_Plugin
 		$pluginName =& $notification->getNotificationObject();
 		$metricName = $notification->getNotificationInfo();
 		
+		$parts = explode('-', $metricName);
+		$metricName = reset($parts);
+		
 		if ($pluginName === false
 			&& (in_array($metricName, self::$seoMetrics)
 				|| $metricName == self::DONE_ARCHIVE_NAME))
@@ -99,16 +102,15 @@ class Piwik_SEO extends Piwik_Plugin
 	 */
 	public static function archiveSEOStatsFor( $idSite )
 	{
-		$today = Piwik_Date::factory('today');
-		
-		$oPeriod = Piwik_Period::factory('day', $today);
-		
 		$archive = Piwik_Archive::build($idSite, 'day', 'today');
 		$archive->setRequestedReport('SEO_Metrics');
 		$archive->prepareArchive();
 		$archive->setIdArchive(Piwik_ArchiveProcessing::TIME_OF_DAY_INDEPENDENT);
 		
-		$isArchivingDone = $archive->getNumeric(self::DONE_ARCHIVE_NAME, $checkIfVisits = false);
+		$today = $archive->getPeriod()->getDateStart();
+		$doneMetricName = self::getMetricArchiveName(self::DONE_ARCHIVE_NAME, $idSite, $today);
+		
+		$isArchivingDone = $archive->getNumeric($doneMetricName, $checkIfVisits = false);
 		if ($isArchivingDone != 0)
 		{
 			return false; // do not perform any HTTP requests if the archiving process is finished
@@ -138,9 +140,10 @@ class Piwik_SEO extends Piwik_Plugin
 		
 		foreach ($stats as $archiveName => $archiveValue)
 		{
+			$archiveName = self::getMetricArchiveName($archiveName, $idSite, $today);
 			$archiveProcessing->insertNumericRecord($archiveName, $archiveValue);
 		}
-		$archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
+		$archiveProcessing->insertNumericRecord($doneMetricName, 1);
 		
 		Piwik_SEO_API::getInstance()->getSiteBirthTime($idSite); // will cache if not already cached
 		
@@ -153,5 +156,13 @@ class Piwik_SEO extends Piwik_Plugin
 	public static function getSiteBirthOptionName( $idSite )
 	{
 		return self::SITE_BIRTH_OPTION_PREFIX.$idSite;
+	}
+	
+	/**
+	 * TODO
+	 */
+	public static function getMetricArchiveName( $name, $idSite, $day )
+	{
+		return $name.'-'.$idSite.'-'.$day;
 	}
 }
