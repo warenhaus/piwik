@@ -81,6 +81,11 @@ class Piwik_Archive_Single extends Piwik_Archive
 	 * @var bool
 	 */
 	protected $alreadyChecked = array();
+	
+	/**
+	 * TODO
+	 */
+	private $shouldLaunchArchivingOverride = true;
 
 	protected function clearCache()
 	{
@@ -225,12 +230,18 @@ class Piwik_Archive_Single extends Piwik_Archive
 			$this->archiveProcessing->init();
 
 			$this->archiveProcessing->setRequestedReport( $this->getRequestedReport() );
-		
+		    
+		    if (!$this->shouldLaunchArchivingOverride)
+		    {
+		        $this->archiveProcessing->disableArchiving();
+		    }
+		    
 			$archivingDisabledArchiveNotProcessed = false;
 			$idArchive = $this->archiveProcessing->loadArchive();
 			if(empty($idArchive))
 			{
-				if($this->archiveProcessing->isArchivingDisabled())
+				if($this->archiveProcessing->isArchivingDisabled()
+				    || !$this->shouldLaunchArchivingOverride)
 				{
 					$archivingDisabledArchiveNotProcessed = true;
 					$logMessage = sprintf("Archiving disabled, for %s", $logMessage);
@@ -254,6 +265,7 @@ class Piwik_Archive_Single extends Piwik_Archive
 			Piwik::log(sprintf("%s, Visits = %d", $logMessage, $this->archiveProcessing->getNumberOfVisits()));
 			$this->isThereSomeVisits = !$archivingDisabledArchiveNotProcessed
 										&& $this->archiveProcessing->isThereSomeVisits();
+			
 			$this->idArchive = $idArchive;
 		}
 		return $archiveJustProcessed;
@@ -367,6 +379,30 @@ class Piwik_Archive_Single extends Piwik_Archive
 		return $value;
 	}
 	
+	/**
+	 * TODO
+	 */
+	public function queryNumeric( $metricName )
+	{
+	    $table = Piwik_ArchiveProcessing::makeNumericArchiveTable($this->period);
+	    $tableName = $table->getTableName();
+	    
+	    $sql = "SELECT value, MAX(idarchive)
+	              FROM $tableName
+	             WHERE idsite = ?
+	               AND date1 = ?
+	               AND date2 = ?
+	               AND period = ?
+	               AND name = ?";
+	    
+	    $bind = array($this->site->getId(),
+	                  $this->period->getDateStart()->toString(),
+	                  $this->period->getDateEnd()->toString(),
+	                  $this->period->getId(),
+	                  $metricName);
+	    
+	    return Piwik_FetchOne($sql, $bind);
+	}
 	
 	/**
 	 * This method loads in memory all the subtables for the main table called $name.
@@ -682,5 +718,13 @@ class Piwik_Archive_Single extends Piwik_Archive
 	public function isArchivingDisabled()
 	{
 		return Piwik_ArchiveProcessing::isArchivingDisabledFor($this->segment, $this->period);
+	}
+	
+	/**
+	 * TODO
+	 */
+	public function disableArchiving()
+	{
+	    $this->shouldLaunchArchivingOverride = false;
 	}
 }

@@ -50,9 +50,11 @@ class Piwik_SEO extends Piwik_Plugin
 	{
 		$hooks = array(
 			'WidgetsList.add' => 'addWidgets',
-			'TaskScheduler.getScheduledTasks' => 'getScheduledTasks',
+			'TaskScheduler.getScheduledTasks' => 'getScheduledTasks', // TODO remove later
 			'Archive.getPluginOfMetric' => 'getPluginOfMetric',
 			'API.getReportMetadata' => 'getReportMetadata',
+			'ArchiveProcessing_Day.compute' => 'archiveDay',
+			'ArchiveProcessing_Period.compute' => 'archivePeriod',
 		);
 		return $hooks;
 	}	
@@ -91,8 +93,99 @@ class Piwik_SEO extends Piwik_Plugin
 		}
 	}
 	
-	public function getScheduledTasks( $notification )
+	public function archiveDay( $notification )
 	{
+		$archiveProcessing = $notification->getNotificationObject();
+		
+		// if the archive processing date is not today, do nothing. we cannot
+		// get data from the past, unfortunately. TODO: doublecheck timezone logic
+		$today = Piwik_Date::factory('now', $archiveProcessing->site->getTimezone())->toString();
+		if ($archiveProcessing->period->getDateStart()->toString() != $today)
+		{
+		    return;
+		}
+		
+		// check if seo archiving has been completed successfully
+		$archive = $archiveProcessing->makeArchiveQuery();
+		$archive->disableArchiving(); // TODO: should be done by archive processing::makeArchiveQuery. also should work w/ Archive_Array (see below as well)
+		$isSEOArchivingDone = $archive->getNumeric(self::DONE_ARCHIVE_NAME);
+		
+		// if archiving has not been completed successfully, issue HTTP requests
+		// otherwise, use old statistics
+		if ($isSEOArchivingDone)
+		{
+		    $dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics, $formatResult = false);
+		    
+		    $stats = array();// TODO code redundancy w/ below
+		    if ($dataTable->getRowsCount() != 0)
+		    {
+		        $stats = $dataTable->getFirstRow()->getColumns();
+		    }
+		}
+		else
+		{
+		    // TODO: move this to a private function
+		    $siteUrl = $archive->getSite()->getMainUrl();// TODO (have to check alias URLs and other domains?)
+		
+		    $rank = new Piwik_SEO_RankChecker($siteUrl);
+		    $statNamesToGetters = array(
+			    self::GOOGLE_PAGE_RANK_METRIC_NAME => 'getPageRank',
+			    self::GOOGLE_INDEXED_PAGE_COUNT => 'getIndexedPagesGoogle',
+			    self::ALEXA_RANK_METRIC_NAME => 'getAlexaRank',
+			    self::DMOZ_METRIC_NAME => 'getDmoz',
+			    self::BING_INDEXED_PAGE_COUNT => 'getIndexedPagesBing',
+			    self::BACKLINK_COUNT => 'getExternalBacklinkCount',
+			    self::REFERRER_DOMAINS_COUNT => 'getReferrerDomainCount',
+		    );
+		    // TODO: how to not use too many majestic API requests? need to use bulk request format.
+		
+		    $stats = array();
+		    foreach ($statNamesToGetters as $statName => $rankCheckerMethodName)
+		    {
+			    $stats[$statName] = call_user_func(array($rank, $rankCheckerMethodName));
+		    }
+		}
+		
+		// insert statistics w/ new idarchive
+		foreach ($stats as $name => $value)
+		{
+		    $archiveProcessing->insertNumericRecord($name, $value);
+		}
+		
+		// finished SEO archiving
+		$archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
+	}
+	/*
+	 * TODO: doing one site at a time is a big no-no, WAY TOO INEFFICIENT. ALSO, must limit to 100 sites or so (see skype for name of option)
+	 */
+	public function archivePeriod( $notification )
+	{return;
+		$archiveProcessing = $notification->getNotificationObject();
+		
+		// get seo metrics for the last day in the current period
+		$lastDay = $archiveProcessing->period->getDateEnd()->toString();
+		$archive = $archiveProcessing->makeArchiveQuery($idSite = false, $period = 'day', $date = $lastDay);
+		$archive->disableArchiving();
+		
+		$dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics);
+		
+	    $stats = array();
+	    if ($dataTable->getRowsCount() != 0)
+	    {
+	        $stats = $dataTable->getFirstRow()->getColumns();
+	    }
+	    
+		// insert metrics for new period
+		foreach ($stats as $name => $value)
+		{
+		    $archiveProcessing->insertNumericRecord($name, $value);
+		}
+		
+	    // TODO insert record for done?
+	}
+	
+	public function getScheduledTasks( $notification )
+	{/* TODO remove this code?
 		$tasks = &$notification->getNotificationObject();
 		
 		// TODO: explain priority
@@ -100,70 +193,16 @@ class Piwik_SEO extends Piwik_Plugin
 			$this, 'archiveSEOStats', null, new Piwik_ScheduledTime_Daily(), Piwik_ScheduledTask::HIGH_PRIORITY
 		);
 		
-		$tasks[] = $archiveSEOStats;
+		$tasks[] = $archiveSEOStats;*/
 	}
 	
 	public function archiveSEOStats()
 	{
-		$allIdSites = Piwik_SitesManager_API::getInstance()->getAllSitesId();
+		/*$allIdSites = Piwik_SitesManager_API::getInstance()->getAllSitesId();
 		foreach ($allIdSites as $idSite)
 		{
 			self::archiveSEOStatsFor($idSite);
-		}
-	}
-	
-	/**
-	 * TODO
-	 * TODO: doing one site at a time is a big no-no, WAY TOO INEFFICIENT
-	 */
-	public static function archiveSEOStatsFor( $idSite )
-	{
-		$archive = Piwik_Archive::build($idSite, 'day', 'today');
-		$archive->setRequestedReport('SEO_Metrics');
-		$archive->prepareArchive();
-		$archive->setIdArchive(Piwik_ArchiveProcessing::TIME_OF_DAY_INDEPENDENT);
-		
-		$today = $archive->getPeriod()->getDateStart();
-		$doneMetricName = self::getMetricArchiveName(self::DONE_ARCHIVE_NAME, $idSite, $today);
-		
-		$isArchivingDone = $archive->getNumeric($doneMetricName, $checkIfVisits = false);
-		if ($isArchivingDone != 0)
-		{
-			return false; // do not perform any HTTP requests if the archiving process is finished
-		}
-		
-		$archiveProcessing = $archive->archiveProcessing;
-
-		$siteUrl = Piwik_Site::getMainUrlFor($idSite);// TODO (have to check alias URLs and other domains?)
-		
-		$rank = new Piwik_SEO_RankChecker($siteUrl);
-		$statNamesToGetters = array(
-			self::GOOGLE_PAGE_RANK_METRIC_NAME => 'getPageRank',
-			self::GOOGLE_INDEXED_PAGE_COUNT => 'getIndexedPagesGoogle',
-			self::ALEXA_RANK_METRIC_NAME => 'getAlexaRank',
-			self::DMOZ_METRIC_NAME => 'getDmoz',
-			self::BING_INDEXED_PAGE_COUNT => 'getIndexedPagesBing',
-			self::BACKLINK_COUNT => 'getExternalBacklinkCount',
-			self::REFERRER_DOMAINS_COUNT => 'getReferrerDomainCount',
-		);
-		// TODO: how to not use too many majestic API requests? need to use bulk request format.
-		
-		$stats = array();
-		foreach ($statNamesToGetters as $statName => $rankCheckerMethodName)
-		{
-			$stats[$statName] = call_user_func(array($rank, $rankCheckerMethodName));
-		}
-		
-		foreach ($stats as $archiveName => $archiveValue)
-		{
-			$archiveName = self::getMetricArchiveName($archiveName, $idSite, $today);
-			$archiveProcessing->insertNumericRecord($archiveName, $archiveValue);
-		}
-		$archiveProcessing->insertNumericRecord($doneMetricName, 1);
-		
-		Piwik_SEO_API::getInstance()->getSiteBirthTime($idSite); // will cache if not already cached
-		
-		return $stats;
+		}*/
 	}
 	
 	/**

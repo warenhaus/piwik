@@ -209,6 +209,11 @@ abstract class Piwik_ArchiveProcessing
 	protected $endTimestampUTC;
 	
 	/**
+	 * TODO
+	 */
+	private $shouldLaunchArchivingOverride = true;
+	
+	/**
 	 * Flag that will forcefully disable the archiving process. Only set by the tests.
 	 */
 	public static $forceDisableArchiving = false;
@@ -910,7 +915,8 @@ abstract class Piwik_ArchiveProcessing
 		
 		$timeStampWhere = '';
 		
-		if($this->minDatetimeArchiveProcessedUTC)
+		if ($this->minDatetimeArchiveProcessedUTC
+		    && $this->shouldLaunchArchivingOverride)
 		{
 			$timeStampWhere = " AND ts_archived >= ? ";
 			$bindSQL[] = Piwik_Date::factory($this->minDatetimeArchiveProcessedUTC)->getDatetime();
@@ -1095,5 +1101,41 @@ abstract class Piwik_ArchiveProcessing
 		return $pluginBeingProcessed == $pluginName
 				|| !Piwik_PluginsManager::getInstance()->isPluginLoaded($pluginBeingProcessed)
 				; 
+	}
+	
+	/**
+	 * TODO
+	 */
+	public function makeArchiveQuery( $idSite = false, $period = false, $date = false, $segment = false )
+	{
+	    if ($idSite === false)
+	    {
+	        $idSite = $this->site->getId();
+	    }
+	    
+	    if ($period === false)
+	    {
+	        $period = $this->period->getLabel();
+	    }
+	    
+	    if ($date === false)
+	    {
+	        $date = $this->period->getDateStart()->toString();
+	    }
+	    
+	    if ($segment === false)
+	    {
+	        $segment = $this->segment;
+	    }
+	    
+	    return Piwik_Archive::build($idSite, $period, $date, $segment);
+	}
+	
+	/**
+	 * TODO
+	 */
+	public function disableArchiving()
+	{
+	    $this->shouldLaunchArchivingOverride = false;
 	}
 }
