@@ -65,29 +65,20 @@ class Piwik_SEO_API
         // TODO: if I remove $formatResult, everything is returned as 0. that makes no bloody sense.
         $table = $archive->getDataTableFromNumeric($seoMetrics, $formatResult = false);
         
-        $result = new Piwik_DataTable();
-        foreach ($table->getFirstRow()->getColumns() as $metricName => $value)
-        {
-             if ($value === false)
-             {
-                  $value = 0;
-             }
-        
-             $columns = array('label' => $metricName, 'value' => $value);
-             $row = new Piwik_DataTable_Row(array(Piwik_DataTable_Row::COLUMNS => $columns));
-             
-             $result->addRow($row);
-        }
+        $result = $this->splitColumnsIntoRows($table);
         
         // TODO: what happens if when archiving, majestic limit is reached? need to retry next cron.
         
-        // add row for site birth
-        $siteBirth = $this->getSiteBirthTime($idSite);
-        $row = new Piwik_DataTable_Row(array(
-             Piwik_DataTable_Row::COLUMNS => array('label' => 'site_birth',
-                                                   'value' => $siteBirth)
-        ));
-        $result->addRow($row);
+        // add row for site birth (only if $result is a table)
+        if ($result instanceof Piwik_DataTable)
+        {
+            $siteBirth = $this->getSiteBirthTime($idSite);
+            $row = new Piwik_DataTable_Row(array(
+                 Piwik_DataTable_Row::COLUMNS => array('label' => 'site_birth',
+                                                       'value' => $siteBirth)
+            ));
+            $result->addRow($row);
+        }
         
         // set metadata for individual rows
         $googleLogo = Piwik_getSearchEngineLogoFromUrl('http://google.com');
@@ -108,33 +99,13 @@ class Piwik_SEO_API
             Piwik_SEO::BING_INDEXED_PAGE_COUNT => array('logo' => $bingLogo, 'id' => 'bing-index'),
             Piwik_SEO::ALEXA_RANK_METRIC_NAME => array('logo' => $alexaLogo, 'id' => 'alexa'),
             Piwik_SEO::DMOZ_METRIC_NAME => array('logo' => $dmozLogo, 'id' => 'dmoz'),
-            'site_birth' => array('logo' => 'plugins/SEO/images/whois.png', 'id' => 'domain-age'),
+            'site_age' => array('logo' => 'plugins/SEO/images/whois.png', 'id' => 'domain-age'),
             Piwik_SEO::BACKLINK_COUNT => array_merge($majesticMetadata, array('id' => 'external-backlinks')),
             Piwik_SEO::REFERRER_DOMAINS_COUNT => array_merge($majesticMetadata, array('id' => 'referrer-domainsb')),
         );
-          
-        foreach ($metadataToAdd as $label => $metadata)
-        {
-             $row = $result->getRowFromLabel($label);
-             if ($row)
-             {
-                  foreach ($metadata as $name => $value)
-                  {
-                       $row->setMetadata($name, $value);
-                  }
-             }
-        }
         
-        // turn site_birth into age (TODO: do in controller?)
-        $row = $result->getRowFromLabel('site_birth');
-        if ($row)
-        {
-             $prettyAge = Piwik::getPrettyTimeFromSeconds(time() - $row->getColumn('value'));
-             
-             $row->setColumn('label', 'site_age');
-             $row->setColumn('value', $prettyAge);
-        }
-          
+        $this->addSEOMetadata($result, $metadataToAdd);
+        
         // translate labels
         $seoMetricTranslations = array(
              Piwik_SEO::GOOGLE_PAGE_RANK_METRIC_NAME => 'Google PageRank',
@@ -253,4 +224,78 @@ class Piwik_SEO_API
           $dataTable->addRowsFromArrayWithIndexLabel($data);
           return $dataTable;
      }
+     
+    private function splitColumnsIntoRows( $table )
+    {
+        if ($table instanceof Piwik_DataTable_Array)
+        {
+            $result = $table->getEmptyClone();
+            foreach ($table->getArray() as $label => $childTable)
+            {
+                $transformedChild = $this->splitColumnsIntoRows($childTable);
+                $result->addTable($transformedChild, $label);
+            }
+            return $result;
+        }
+        else
+        {
+            $result = $table->getEmptyClone();
+            
+            $firstRow = $table->getFirstRow();
+            if ($firstRow)
+            {
+                foreach ($firstRow->getColumns() as $metricName => $value)
+                {
+                    if ($value === false)
+                    {
+                        $value = 0;
+                    }
+                
+                    $columns = array('label' => $metricName, 'value' => $value);
+                    $row = new Piwik_DataTable_Row(array(Piwik_DataTable_Row::COLUMNS => $columns));
+                     
+                    $result->addRow($row);
+                }
+            }
+            return $result;
+        }
+    }
+    
+    private function addSEOMetadata( $table, $metadataToAdd )
+    {
+        if ($table instanceof Piwik_DataTable_Array)
+        {
+            foreach ($table->getArray() as $childTable)
+            {
+                $this->addSEOMetadata($childTable, $metadataToAdd);
+            }
+        }
+        else
+        {
+            // turn site_birth into age (TODO: do in controller?)
+            $row = $table->getRowFromLabel('site_birth');
+            if ($row)
+            {
+                $prettyAge = Piwik::getPrettyTimeFromSeconds(time() - $row->getColumn('value'));
+                
+                $row->setColumn('label', 'site_age');
+                $row->setColumn('value', $prettyAge);
+            }
+            
+            $table->rebuildIndex();
+            
+            foreach ($metadataToAdd as $label => $metadata)
+            {
+                $row = $table->getRowFromLabel($label);
+                
+                if ($row)
+                {
+                    foreach ($metadata as $name => $value)
+                    {
+                        $row->setMetadata($name, $value);
+                    }
+                }
+            }
+        }
+    }
 }

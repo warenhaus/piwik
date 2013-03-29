@@ -526,7 +526,7 @@ class Piwik_DataTable
 	/**
 	 * Rebuilds the index used to lookup a row by label
 	 */
-	private function rebuildIndex()
+	public function rebuildIndex()
 	{
 		foreach($this->rows as $id => $row)
 		{

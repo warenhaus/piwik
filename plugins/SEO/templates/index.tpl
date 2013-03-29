@@ -43,15 +43,17 @@
 <script type="text/javascript">
 $(document).ready(function() {
 	var rowEvolutionLink = $('#seo-ranks .row-evolution-link'),
-		popoverUrl = window.location.href + '&debug=1&popover=' + rowEvolutionLink.attr('data-popover');
-	
+		popoverUrl = window.location.href + '&popover=' + rowEvolutionLink.attr('data-popover');
+	// TODO: use this one: DataTable_RowActions_RowEvolution.launch = function(apiMethod, label)
 	rowEvolutionLink.hover(
 		function() {
 			$('img', this).each(function() {
 				$(this).toggle();
 			});
 		}
-	).attr('href', popoverUrl);
+	).click(function() {
+	    DataTable_RowActions_RowEvolution.launch('SEO.getSEOStats', );
+	});
 });
 </script>
 {/literal}
