@@ -29,19 +29,7 @@ class Piwik_SEO_Controller extends Piwik_Controller
             $url = 'http://' . $url;
         }
 
-        if (empty($url) || !Piwik_Common::isLookLikeUrl($url)) {
-            $url = $site->getMainUrl();
-        }
-
-        $dataTable = Piwik_SEO_API::getInstance()->getRank($url);
-
-        $url = urldecode(Piwik_Common::getRequestVar('url', '', 'string'));
-        
-        if(!empty($url) && strpos($url, 'http://') !== 0 && strpos($url, 'https://') !== 0) {
-            $url = 'http://'.$url;
-        }
-        
-        $url = $site->getMainUrl(); // TODO: remove $url and url text entry in UI
+        $url = $site->getMainUrl();
         
         $today = Piwik_Date::factory('now', $site->getTimezone())->toString();
         

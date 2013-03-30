@@ -153,7 +153,7 @@ class Piwik_SEO_API
      * @return Piwik_DataTable
      */
     public function getRank($url)
-    {
+    {$ex = new Exception();echo '<pre>'.$ex->getTraceAsString().'</pre>';
         Piwik::checkUserHasSomeViewAccess();
         $rank = new Piwik_SEO_RankChecker($url);
 

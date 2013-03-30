@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <div id='seo-ranks'>
     <script type="text/javascript" src="plugins/SEO/templates/rank.js"></script>
     
