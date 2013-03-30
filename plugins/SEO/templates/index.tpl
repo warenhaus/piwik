@@ -2,8 +2,15 @@
 	<script type="text/javascript" src="plugins/SEO/templates/rank.js"></script>
 	
 	<div style="padding: 8px;" >
+        <div align="left" class="mediumtext">
+          {'Installation_SetupWebSiteURL'|translate|ucfirst}
+          <input type="text" id="seoUrl" size="15" value="{$urlToRank|escape:'html'}" class="textbox"/>
+		  <span style="padding-left:2px;"> 
+		      <input type="submit" id="check-site-seo-btn" value="{'SEO_Rank'|translate}"/><!-- TODO change text of button -->
+		  </span>
+        </div>
 	{* TODO Check if should remove SetupWebSiteURL/SEO_Rank *}
-	   <div id="rankStats" align="left">
+	    <div id="rankStats" align="left" style="margin-top:1em;">
 	   		{if empty($ranks)}
 	   			{'General_Error'|translate}
 	   		{else}
@@ -33,7 +40,7 @@
 	   </div>
 	</form>
 	<div id="seo-widget-footer" class="form-description" style="text-align:center;margin-top:1em">
-		{'SEO_ShowingStatsFor'|translate:$prettyDate} <a class="row-evolution-link" title="View evolution of SEO statistics for this site" data-popover="{$popoverParam}">
+		{'SEO_ShowingStatsFor'|translate:$prettyDate} <a class="row-evolution-link" title="View evolution of SEO statistics for this site"><!-- TODO translate this as well (check all) -->
 			<img src="themes/default/images/row_evolution.png"/>
 			<img src="themes/default/images/row_evolution_hover.png" style="display:none"/>
 		</a>
@@ -42,10 +49,8 @@
 {literal}
 <script type="text/javascript">
 $(document).ready(function() {
-	var rowEvolutionLink = $('#seo-ranks .row-evolution-link'),
-		popoverUrl = window.location.href + '&popover=' + rowEvolutionLink.attr('data-popover');// TODO remove
 	// TODO: use this one: DataTable_RowActions_RowEvolution.launch = function(apiMethod, label)
-	rowEvolutionLink.hover(
+	$('#seo-ranks .row-evolution-link').hover(
 		function() {
 			$('img', this).each(function() {
 				$(this).toggle();
@@ -55,6 +60,10 @@ $(document).ready(function() {
 	    e.preventDefault();
 	    DataTable_RowActions_RowEvolution.launch('SEO.getSEOStatsWithoutMetadata', 'SEO Stats'); // TODO translate
 	    return false;
+	});
+	
+	$('#check-site-seo-btn').click(function() {
+	    // TODO
 	});
 });
 </script>

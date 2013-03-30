@@ -105,9 +105,9 @@ class Piwik_SEO_API
             Piwik_SEO::BING_INDEXED_PAGE_COUNT => array('logo' => $bingLogo, 'id' => 'bing-index'),
             Piwik_SEO::ALEXA_RANK_METRIC_NAME => array('logo' => $alexaLogo, 'id' => 'alexa'),
             Piwik_SEO::DMOZ_METRIC_NAME => array('logo' => $dmozLogo, 'id' => 'dmoz'),
-            'site_age' => array('logo' => 'plugins/SEO/images/whois.png', 'id' => 'domain-age'),
+            Piwik_SEO::SITE_AGE_LABEL => array('logo' => 'plugins/SEO/images/whois.png', 'id' => 'domain-age'),
             Piwik_SEO::BACKLINK_COUNT => array_merge($majesticMetadata, array('id' => 'external-backlinks')),
-            Piwik_SEO::REFERRER_DOMAINS_COUNT => array_merge($majesticMetadata, array('id' => 'referrer-domainsb')),
+            Piwik_SEO::REFERRER_DOMAINS_COUNT => array_merge($majesticMetadata, array('id' => 'referrer-domains')),
         );
         
         $this->addSEOMetadata($result, $metadataToAdd);

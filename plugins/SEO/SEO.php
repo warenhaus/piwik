@@ -21,7 +21,7 @@ class Piwik_SEO extends Piwik_Plugin
 	const BING_INDEXED_PAGE_COUNT = 'bing_indexed_pages';
 	const BACKLINK_COUNT = 'backlinks';
 	const REFERRER_DOMAINS_COUNT = 'referrer_domains';
-	
+	const SITE_AGE_LABEL = 'site_age';
 	const DONE_ARCHIVE_NAME = 'SEO_done'; // TODO docs
 	
 	public static $seoMetrics = array(
@@ -35,14 +35,14 @@ class Piwik_SEO extends Piwik_Plugin
 	);
 	
     public static $seoMetricTranslations = array(
-        Piwik_SEO::GOOGLE_PAGE_RANK_METRIC_NAME => 'Google PageRank',
-        Piwik_SEO::GOOGLE_INDEXED_PAGE_COUNT => 'SEO_Google_IndexedPages',
-        Piwik_SEO::ALEXA_RANK_METRIC_NAME => 'SEO_AlexaRank',
-        Piwik_SEO::DMOZ_METRIC_NAME => 'SEO_Dmoz',
-        Piwik_SEO::BING_INDEXED_PAGE_COUNT => 'SEO_Bing_IndexedPages',
-        Piwik_SEO::BACKLINK_COUNT => 'SEO_ExternalBacklinks',
-        Piwik_SEO::REFERRER_DOMAINS_COUNT => 'SEO_ReferrerDomains',
-        'site_age' => 'SEO_DomainAge'
+        self::GOOGLE_PAGE_RANK_METRIC_NAME => 'Google PageRank',
+        self::GOOGLE_INDEXED_PAGE_COUNT => 'SEO_Google_IndexedPages',
+        self::ALEXA_RANK_METRIC_NAME => 'SEO_AlexaRank',
+        self::DMOZ_METRIC_NAME => 'SEO_Dmoz',
+        self::BING_INDEXED_PAGE_COUNT => 'SEO_Bing_IndexedPages',
+        self::BACKLINK_COUNT => 'SEO_ExternalBacklinks',
+        self::REFERRER_DOMAINS_COUNT => 'SEO_ReferrerDomains',
+        self::SITE_AGE_LABEL => 'SEO_DomainAge'
     );
 	const SITE_BIRTH_OPTION_PREFIX = 'site_birth_';
 	
