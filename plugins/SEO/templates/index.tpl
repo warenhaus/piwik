@@ -43,7 +43,7 @@
 <script type="text/javascript">
 $(document).ready(function() {
 	var rowEvolutionLink = $('#seo-ranks .row-evolution-link'),
-		popoverUrl = window.location.href + '&popover=' + rowEvolutionLink.attr('data-popover');
+		popoverUrl = window.location.href + '&popover=' + rowEvolutionLink.attr('data-popover');// TODO remove
 	// TODO: use this one: DataTable_RowActions_RowEvolution.launch = function(apiMethod, label)
 	rowEvolutionLink.hover(
 		function() {
@@ -51,8 +51,10 @@ $(document).ready(function() {
 				$(this).toggle();
 			});
 		}
-	).click(function() {
-	    DataTable_RowActions_RowEvolution.launch('SEO.getSEOStats', );
+	).click(function(e) {
+	    e.preventDefault();
+	    DataTable_RowActions_RowEvolution.launch('SEO.getSEOStatsWithoutMetadata', 'SEO Stats'); // TODO translate
+	    return false;
 	});
 });
 </script>

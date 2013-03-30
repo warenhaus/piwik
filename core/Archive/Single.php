@@ -547,7 +547,7 @@ class Piwik_Archive_Single extends Piwik_Archive
 	 * TODO change doc
 	 * @return Piwik_DataTable_Simple
 	 */
-	public function getDataTableFromNumeric( $fields, $formatResult = true )
+	public function getDataTableFromNumeric( $fields, $checkIfVisits = true )
 	{
 		if(!is_array($fields))
 		{
@@ -557,14 +557,7 @@ class Piwik_Archive_Single extends Piwik_Archive
 		$values = array();
 		foreach($fields as $field)
 		{
-			if ($formatResult)
-			{
-				$values[$field] = $this->getNumeric($field);
-			}
-			else
-			{
-				$values[$field] = $this->get($field, 'numeric', $archiveDate = false, $checkIfVisits = false);
-			}
+			$values[$field] = $this->getNumeric($field, $checkIfVisits);
 		}
 		
 		$table = new Piwik_DataTable_Simple();
