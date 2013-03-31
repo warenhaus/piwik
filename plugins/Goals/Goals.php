@@ -91,7 +91,8 @@ class Piwik_Goals extends Piwik_Plugin
     }
 
     /**
-     * TODO
+     * Event handler for Archive.getPluginOfMetric. Checks if a metric is a
+     * Goals metric or not.
      */
     public function getPluginOfMetric( $notification )
     {

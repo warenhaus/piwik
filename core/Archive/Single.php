@@ -83,10 +83,12 @@ class Piwik_Archive_Single extends Piwik_Archive
     protected $alreadyChecked = array();
     
     /**
-     * TODO
+     * Whether archiving should be launched or not. It is set to false by disableArchiving.
+     * 
+     * @var bool
      */
     private $shouldLaunchArchivingOverride = true;
-
+    
     protected function clearCache()
     {
         foreach ($this->blobCached as $name => $blob) {
@@ -256,7 +258,7 @@ class Piwik_Archive_Single extends Piwik_Archive
      * @param string|bool $archivedDate  Value to store date of archive info in. If false, not stored.
      * @return mixed|bool  false if no result
      */
-    protected function get( $name, $typeValue = 'numeric', &$archivedDate = false, $checkIfVisits = true )
+    protected function get($name, $typeValue = 'numeric', &$archivedDate = false)
     {
         $this->setRequestedReport($name);
         $this->prepareArchive();
@@ -282,7 +284,7 @@ class Piwik_Archive_Single extends Piwik_Archive
         }
 
         if (!$this->isThereSomeVisits
-            && $checkIfVisits
+            && $this->doNotQueryIfNoVisits
         ) {
             return false;
         }
@@ -400,7 +402,8 @@ class Piwik_Archive_Single extends Piwik_Archive
     {
         $this->setRequestedReport($name);
         $this->prepareArchive();
-        if (!$this->isThereSomeVisits) {
+        if (!$this->isThereSomeVisits
+            && $this->doNotQueryIfNoVisits) {
             return;
         }
 
@@ -441,9 +444,9 @@ class Piwik_Archive_Single extends Piwik_Archive
      * @param string $name
      * @return int|float
      */
-    public function getNumeric($name, $checkIfVisits = true) // TODO: remove and use private member + public method (same for all occurances)
+    public function getNumeric($name)
     {
-        return $this->formatNumericValue($this->get($name, 'numeric', $checkIfVisits));
+        return $this->formatNumericValue($this->get($name, 'numeric'));
     }
 
 
@@ -476,7 +479,7 @@ class Piwik_Archive_Single extends Piwik_Archive
      *
      * @return Piwik_DataTable_Simple
      */
-    public function getDataTableFromNumeric($fields, $checkIfVisits = true)
+    public function getDataTableFromNumeric($fields)
     {
         if (!is_array($fields)) {
             $fields = array($fields);
@@ -484,7 +487,7 @@ class Piwik_Archive_Single extends Piwik_Archive
 
         $values = array();
         foreach ($fields as $field) {
-            $values[$field] = $this->getNumeric($field, $checkIfVisits);
+            $values[$field] = $this->getNumeric($field);
         }
 
         $table = new Piwik_DataTable_Simple();
@@ -634,7 +637,10 @@ class Piwik_Archive_Single extends Piwik_Archive
     }
     
     /**
-     * TODO
+     * Makes sure the archiving process will not be launched when querying
+     * archive data. This function should always be called when using Piwik_Archive
+     * instances within archiving code (which will usually be in event handlers for
+     * ArchiveProcessing_Day.compute/ArchiveProcessing_Period.compute).
      */
     public function disableArchiving()
     {

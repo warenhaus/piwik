@@ -334,6 +334,11 @@ overlay_following_pages_limit = 300
 ; With this option, you can disable the framed mode of the Overlay plugin. Use it if your website contains a framebuster.
 overlay_disable_framed_mode = 0
 
+; The maximum number of sites to archive SEO metrics for. SEO metrics are determined by querying third
+; party services, which means for each site about 6 HTTP requests are made. Getting metrics for too many
+; sites can make archiving far too slow, so increase this value with care.
+seo_max_sites_to_archive_metrics_for = 50
+
 [Tracker]
 ; Piwik uses first party cookies by default. If set to 1,
 ; the visit ID cookie will be set on the Piwik server domain as well

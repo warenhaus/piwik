@@ -6,10 +6,11 @@
           {'Installation_SetupWebSiteURL'|translate|ucfirst}
           <input type="text" id="seoUrl" size="15" value="{$urlToRank|escape:'html'}" class="textbox"/>
           <span style="padding-left:2px;"> 
-              <input type="submit" id="check-site-seo-btn" value="{'SEO_Rank'|translate}"/><!-- TODO change text of button -->
+              <input type="submit" id="check-site-seo-btn" value="{'General_Check'|translate}"/>
           </span>
+          <span id="ajaxLoadingSEO" class='loadingPiwik' style='display:none'><img src='./themes/default/images/loading-blue.gif'/></span>
         </div>
-    {* TODO Check if should remove SetupWebSiteURL/SEO_Rank *}
+    {* TODO Check if should remove SEO_Rank *}
         <div id="rankStats" align="left" style="margin-top:1em;">
             {if empty($ranks)}
                 {'General_Error'|translate}
@@ -43,17 +44,18 @@
             {/if}
         </div>
     </div>
+    {if !empty($prettyDate)}
     <div id="seo-widget-footer" class="form-description" style="text-align:center;margin-top:1em">
-        {'SEO_ShowingStatsFor'|translate:$prettyDate} <a class="row-evolution-link" title="View evolution of SEO statistics for this site"><!-- TODO translate this as well (check all) -->
+        {'SEO_ShowingStatsFor'|translate:$prettyDate} <a class="row-evolution-link" title="{'SEO_RowEvolutionTooltip'|translate}">
             <img src="themes/default/images/row_evolution.png"/>
             <img src="themes/default/images/row_evolution_hover.png" style="display:none"/>
         </a>
     </div>
+    {/if}
 </div>
 {literal}
 <script type="text/javascript">
-$(document).ready(function() {
-    // TODO: use this one: DataTable_RowActions_RowEvolution.launch = function(apiMethod, label)
+$(document).ready(function() {// TODO: remove rank.js or move this there?
     $('#seo-ranks .row-evolution-link').hover(
         function() {
             $('img', this).each(function() {
@@ -62,12 +64,25 @@ $(document).ready(function() {
         }
     ).click(function(e) {
         e.preventDefault();
-        DataTable_RowActions_RowEvolution.launch('SEO.getSEOStatsWithoutMetadata', 'SEO Stats'); // TODO translate
+        DataTable_RowActions_RowEvolution.launch('SEO.getSEOStatsWithoutMetadata', {/literal}"{'SEO_Stats'|translate}"{literal});
         return false;
     });
     
     $('#check-site-seo-btn').click(function() {
-        // TODO
+        var ajaxRequest = new ajaxHelper();
+        ajaxRequest.setLoadingElement('#ajaxLoadingSEO');
+        ajaxRequest.addParams({
+            module: 'SEO',
+            action: 'getSEOStatsForUrl',
+            url: encodeURIComponent($('#seoUrl').val())
+        }, 'get');
+        ajaxRequest.setCallback(
+            function (response) {
+                $('#seo-ranks').html(response);
+            }
+        );
+        ajaxRequest.setFormat('html');
+        ajaxRequest.send(false);
     });
 });
 </script>

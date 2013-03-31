@@ -11,12 +11,12 @@ $(document).ready(function () {
         ajaxRequest.setLoadingElement('#ajaxLoadingSEO');
         ajaxRequest.addParams({
             module: 'SEO',
-            action: 'getRank',
+            action: 'getSEOStatsForUrl',
             url: encodeURIComponent($('#seoUrl').val())
         }, 'get');
         ajaxRequest.setCallback(
             function (response) {
-                $('#SeoRanks').html(response);
+                $('#seo-ranks').html(response);
             }
         );
         ajaxRequest.setFormat('html');

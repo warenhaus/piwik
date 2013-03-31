@@ -144,4 +144,17 @@ abstract class Piwik_Archive_Array extends Piwik_Archive
         }
         return $table;
     }
+    
+    /**
+     * Makes sure the archiving process will not be launched when querying
+     * archive data. This function should always be called when using Piwik_Archive
+     * instances within archiving code (which will usually be in event handlers for
+     * ArchiveProcessing_Day.compute/ArchiveProcessing_Period.compute).
+     */
+    public function disableArchiving()
+    {
+        foreach ($this->archives as $archive) {
+            $archive->disableArchiving();
+        }
+    }
 }

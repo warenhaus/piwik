@@ -194,6 +194,22 @@ class Piwik_SEO_RankChecker
         $majesticInfo = $this->getMajesticInfo();
         return $majesticInfo['referrer_domains_count'];
     }
+    
+    /**
+     * TODO
+     */
+    public function getAllStats()
+    {
+        $result = array(
+            Piwik_SEO::GOOGLE_PAGE_RANK_METRIC_NAME => $this->getPageRank(),
+            Piwik_SEO::GOOGLE_INDEXED_PAGE_COUNT => $this->getIndexedPagesGoogle(),
+            Piwik_SEO::ALEXA_RANK_METRIC_NAME => $this->getAlexaRank(),
+            Piwik_SEO::DMOZ_METRIC_NAME => $this->getDmoz(),
+            Piwik_SEO::BING_INDEXED_PAGE_COUNT => $this->getExternalBacklinkCount(),
+            Piwik_SEO::REFERRER_DOMAINS_COUNT => $this->getReferrerDomainCount()
+        );
+        return $result;
+    }
 
     /**
      * Returns the domain age archive.org lists for the current url

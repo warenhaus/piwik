@@ -206,9 +206,12 @@ abstract class Piwik_ArchiveProcessing
     protected $endTimestampUTC;
     
     /**
-     * TODO
+     * Whether to check if an archive is too old or not. If this check is performed
+     * and an archive is found to be too old, a new archive is created.
+     * 
+     * @var bool
      */
-    private $shouldLaunchArchivingOverride = true;
+    private $checkIfArchiveIsTooOld = true;
 
     /**
      * Flag that will forcefully disable the archiving process. Only set by the tests.
@@ -881,7 +884,7 @@ abstract class Piwik_ArchiveProcessing
         $timeStampWhere = '';
 
         if ($this->minDatetimeArchiveProcessedUTC
-            && $this->shouldLaunchArchivingOverride
+            && $this->checkIfArchiveIsTooOld
         ) {
             $timeStampWhere = " AND ts_archived >= ? ";
             $bindSQL[] = Piwik_Date::factory($this->minDatetimeArchiveProcessedUTC)->getDatetime();
@@ -1055,7 +1058,16 @@ abstract class Piwik_ArchiveProcessing
     }
     
     /**
-     * TODO
+     * Creates and returns a Piwik_Archive instance which can be used to
+     * query archive data. By default the instance will be created for the
+     * same site, period and segment this ArchiveProcessing instance is
+     * currently archving data for.
+     * 
+     * @param int|false $idSite
+     * @param string|false $period
+     * @param string|false $date
+     * @param string|false $segment
+     * @return Piwik_Archive
      */
     public function makeArchiveQuery($idSite = false, $period = false, $date = false, $segment = false)
     {
@@ -1075,14 +1087,17 @@ abstract class Piwik_ArchiveProcessing
             $segment = $this->segment;
         }
         
-        return Piwik_Archive::build($idSite, $period, $date, $segment);
+        $archive = Piwik_Archive::build($idSite, $period, $date, $segment);
+        $archive->disableArchiving();
+        return $archive;
     }
     
     /**
-     * TODO
+     * Makes sure new archive entries are not created, even if the latest
+     * archive is too old.
      */
     public function disableArchiving()
     {
-        $this->shouldLaunchArchivingOverride = false;
+        $this->checkIfArchiveIsTooOld = false;
     }
 }

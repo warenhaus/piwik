@@ -176,6 +176,13 @@ abstract class Piwik_Archive
      * @var Piwik_Segment
      */
     protected $segment = false;
+    
+    /**
+     * If true, this will check if there are no visits for the current period, and if
+     * so assume there are also no statistics. This can be set to false in
+     * performQueryWhenNoVisits().
+     */
+    protected $doNotQueryIfNoVisits = true;
 
     /**
      * Builds an Archive object or returns the same archive if previously built.
@@ -434,5 +441,14 @@ abstract class Piwik_Archive
     static public function isMultipleSites($idSiteString)
     {
         return $idSiteString == 'all' || strpos($idSiteString, ',') !== false;
+    }
+
+    /**
+     * Disables the optimization that checks for visits and if none are found, it is
+     * assumed there are no metrics to be found.
+     */
+    public function performQueryWhenNoVisits()
+    {
+        $this->doNotQueryIfNoVisits = false;
     }
 }

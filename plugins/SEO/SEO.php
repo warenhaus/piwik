@@ -14,6 +14,7 @@
  */
 class Piwik_SEO extends Piwik_Plugin
 {
+    /** Archive names for SEO metrics. */
     const GOOGLE_PAGE_RANK_METRIC_NAME = 'ggl_page_rank';
     const GOOGLE_INDEXED_PAGE_COUNT = 'ggl_indexed_pages';
     const ALEXA_RANK_METRIC_NAME = 'alexa_rank';
@@ -21,8 +22,20 @@ class Piwik_SEO extends Piwik_Plugin
     const BING_INDEXED_PAGE_COUNT = 'bing_indexed_pages';
     const BACKLINK_COUNT = 'backlinks';
     const REFERRER_DOMAINS_COUNT = 'referrer_domains';
+    
+    /**
+     * If SEO stats are successfully obtained (ie, no third party APIs fail or block our IP),
+     * an archive w/ this name and the value 1 is stored. If found when archiving for a
+     * period/site, no new HTTP requests are made.
+     */
+    const DONE_ARCHIVE_NAME = 'SEO_done';
+    
+    /**
+     * Site birth time is stored as an option, and age is calculated in the API methods.
+     * This is the label used in resulting datatables.
+     */
     const SITE_AGE_LABEL = 'site_age';
-    const DONE_ARCHIVE_NAME = 'SEO_done'; // TODO docs
+    
     const SITE_BIRTH_OPTION_PREFIX = 'site_birth_';
     
     public static $seoMetrics = array(
@@ -87,7 +100,7 @@ class Piwik_SEO extends Piwik_Plugin
             'processedMetrics' => false,
             'order' => 1
         );
-        $reports[] = array( // TODO: should be hidden in report metadata list...
+        $reports[] = array(
             'category' => 'SEO',
             'name' => Piwik_Translate('SEO_SeoRankings').' without metadata',
             'module' => 'SEO',
@@ -101,7 +114,7 @@ class Piwik_SEO extends Piwik_Plugin
     
     public function addWidgets()
     {
-        Piwik_AddWidget('SEO', 'SEO_SeoRankings', 'SEO', 'getRank');
+        Piwik_AddWidget('SEO', 'SEO_SeoRankings', 'SEO', 'getSEOStatsForSite');
     }
     
     public function getPluginOfMetric( $notification )
@@ -121,11 +134,26 @@ class Piwik_SEO extends Piwik_Plugin
     }
     
     /**
-     * TODO
+     * Archives SEO metrics for today. If the date requested for archiving is not
+     * today, nothing is done. Also only archives metrics for the first N sites
+     * (determined by the seo_max_sites_to_archive_metrics_for config option).
+     * 
+     * If stats for today have already been requested, we do not do it again.
+     * Instead, we request the last stats and re-insert them w/ a new idarchive.
+     * 
+     * TODO: in order to not use too many majestic API requests, we can issue
+     *       up to 100 sites at once in a request, but the archiving process is
+     *       not built for archiving multiple sites at once.
+     * 
+     * @param Piwik_Event_Notification $notification
      */
     public function archiveDay( $notification )
     {
         $archiveProcessing = $notification->getNotificationObject();
+        
+        if (!$this->shouldArchiveForSite($archiveProcessing->site->getId())) {
+            return;
+        }
         
         // if the archive processing date is not today, do nothing. we cannot
         // get data from the past, unfortunately. TODO: doublecheck timezone logic
@@ -136,38 +164,19 @@ class Piwik_SEO extends Piwik_Plugin
         
         // check if seo archiving has been completed successfully
         $archive = $archiveProcessing->makeArchiveQuery();
-        $archive->disableArchiving(); // TODO: should be done by archive processing::makeArchiveQuery. also should work w/ Archive_Array (see below as well)
+        $archive->performQueryWhenNoVisits();
         $isSEOArchivingDone = $archive->getNumeric(self::DONE_ARCHIVE_NAME);
         
         // if archiving has not been completed successfully, issue HTTP requests
         // otherwise, use old statistics
         if ($isSEOArchivingDone) {
-            $dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics, $formatResult = false);
-            
-            $stats = array();// TODO code redundancy w/ below
-            if ($dataTable->getRowsCount() != 0) {
-                $stats = $dataTable->getFirstRow()->getColumns();
-            }
+            $dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics);
+            $stats = $this->getColumnsOfFirstRow($dataTable);
         } else {
-            // TODO: move this to a private function
-            $siteUrl = $archive->getSite()->getMainUrl();// TODO (have to check alias URLs and other domains?)
+            $siteUrl = $archive->getSite()->getMainUrl();
         
             $rank = new Piwik_SEO_RankChecker($siteUrl);
-            $statNamesToGetters = array(
-                self::GOOGLE_PAGE_RANK_METRIC_NAME => 'getPageRank',
-                self::GOOGLE_INDEXED_PAGE_COUNT => 'getIndexedPagesGoogle',
-                self::ALEXA_RANK_METRIC_NAME => 'getAlexaRank',
-                self::DMOZ_METRIC_NAME => 'getDmoz',
-                self::BING_INDEXED_PAGE_COUNT => 'getIndexedPagesBing',
-                self::BACKLINK_COUNT => 'getExternalBacklinkCount',
-                self::REFERRER_DOMAINS_COUNT => 'getReferrerDomainCount',
-            );
-            // TODO: how to not use too many majestic API requests? need to use bulk request format.
-        
-            $stats = array();
-            foreach ($statNamesToGetters as $statName => $rankCheckerMethodName) {
-                $stats[$statName] = call_user_func(array($rank, $rankCheckerMethodName));
-            }
+            $stats = $rank->getAllStats();
         }
         
         // insert statistics w/ new idarchive
@@ -175,12 +184,20 @@ class Piwik_SEO extends Piwik_Plugin
             $archiveProcessing->insertNumericRecord($name, $value);
         }
         
-        // finished SEO archiving
-        $archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
+        // finished SEO archiving (unless the Majestic API returned nothing)
+        if ($stats[self::BACKLINK_COUNT] !== false
+            && $stats[self::REFERRER_DOMAINS_COUNT] !== false
+        ) {
+            $archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
+        }
     }
     
-    /*
-     * TODO: doing one site at a time is a big no-no, WAY TOO INEFFICIENT. ALSO, must limit to 100 sites or so (see skype for name of option)
+    /**
+     * Archives SEO metrics for a non-day period. This function gets the metrics
+     * for the last day in the period and stores them as the SEO metrics for the
+     * period.
+     * 
+     * @param Piwik_Event_Notification $notification
      */
     public function archivePeriod( $notification )
     {
@@ -189,28 +206,50 @@ class Piwik_SEO extends Piwik_Plugin
         // get seo metrics for the last day in the current period
         $lastDay = $archiveProcessing->period->getDateEnd()->toString();
         $archive = $archiveProcessing->makeArchiveQuery($idSite = false, $period = 'day', $date = $lastDay);
-        $archive->disableArchiving();
+        $archive->performQueryWhenNoVisits();
         
         $dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics);
         
-        $stats = array();
-        if ($dataTable->getRowsCount() != 0) {
-            $stats = $dataTable->getFirstRow()->getColumns();
-        }
+        $stats = $this->getColumnsOfFirstRow($dataTable);
         
         // insert metrics for new period
         foreach ($stats as $name => $value) {
             $archiveProcessing->insertNumericRecord($name, $value);
         }
-        
-        // TODO insert record for done?
     }
     
     /**
-     * TODO
+     * Returns the name of the option that holds the birth time for a site.
+     * 
+     * @return string
      */
     public static function getSiteBirthOptionName( $idSite )
     {
         return self::SITE_BIRTH_OPTION_PREFIX.$idSite;
+    }
+    
+    private function getColumnsOfFirstRow($dataTable)
+    {
+        $result = array();
+        if ($dataTable->getRowsCount() != 0) {
+            $result = $dataTable->getFirstRow()->getColumns();
+        }
+        return $result;
+    }
+    
+    /**
+     * Gets the list of site IDs for whom SEO metrics should be queried and archived.
+     * We don't do it for all sites since making that many HTTP requests can take too
+     * much time.
+     */
+    private function shouldArchiveForSite($idSite)
+    {
+        $seoMaxSitesToArchiveMetricsFor =
+            Piwik_Config::getInstance()->General['seo_max_sites_to_archive_metrics_for'];
+        
+        $allIdSites = Piwik_SitesManager_API::getAllSitesId();
+        $idSitesToArchiveFor = array_slice($allIdSites, 0, 100);
+        
+        return in_array($idSite, $idSitesToArchiveFor);
     }
 }

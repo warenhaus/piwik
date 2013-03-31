@@ -36,7 +36,13 @@ class Piwik_SEO_API
     }
     
     /**
-     * TODO
+     * Returns SEO Stats in one row without any metadata. Does not return the
+     * age of a website.
+     * 
+     * @param int $idSite
+     * @param string $period
+     * @param string $date
+     * @return Piwik_DataTable
      */
     public function getSEOStatsWithoutMetadata($idSite, $period, $date)
     {
@@ -46,33 +52,28 @@ class Piwik_SEO_API
             $period = 'day';
             $date = $oPeriod->getDateEnd()->toString();
         }
-          
-        $archive = Piwik_Archive::build($idSite, $period, $date);
         
-        $seoMetrics = array(
-            Piwik_SEO::GOOGLE_PAGE_RANK_METRIC_NAME,
-            Piwik_SEO::GOOGLE_INDEXED_PAGE_COUNT,
-            Piwik_SEO::ALEXA_RANK_METRIC_NAME,
-            Piwik_SEO::DMOZ_METRIC_NAME,
-            Piwik_SEO::BING_INDEXED_PAGE_COUNT,
-            Piwik_SEO::BACKLINK_COUNT,
-            Piwik_SEO::REFERRER_DOMAINS_COUNT
-        );
-          
-        // TODO: if I remove $formatResult, everything is returned as 0. that makes no bloody sense.
-        $result = $archive->getDataTableFromNumeric($seoMetrics, $formatResult = false); // TODO: translate
-        $result->filter('ColumnCallbackAddColumn', array(array(), 'label', 'Piwik_Translate', array('SEO Stats')));
+        $archive = Piwik_Archive::build($idSite, $period, $date);
+        $archive->performQueryWhenNoVisits();
+        
+        $result = $archive->getDataTableFromNumeric(Piwik_SEO::$seoMetrics);
+        $result->filter('ColumnCallbackAddColumn', array(array(), 'label', 'Piwik_Translate', array('SEO_Stats')));
         return $result;
     }
     
     /**
-     * TODO
+     * Returns SEO stats and site age with metadata (including the logo and any
+     * pertinent links).
+     * 
+     * @param int $idSite
+     * @param string $period
+     * @param string $date
+     * @return Piwik_DataTable
      */
     public function getSEOStats( $idSite, $period, $date )
     {
         $result = $this->getSEOStatsWithoutMetadata($idSite, $period, $date);
         $result->filter('ColumnDelete', array('label'));
-        // TODO: what happens if when archiving, majestic limit is reached? need to retry next cron.
         
         // add row for site birth (only if $result is a table)
         if ($result instanceof Piwik_DataTable) {
@@ -83,136 +84,52 @@ class Piwik_SEO_API
         }
         
         $result = $this->splitColumnsIntoRows($result);
-        
-        // set metadata for individual rows
-        $googleLogo = Piwik_getSearchEngineLogoFromUrl('http://google.com');
-        $bingLogo = Piwik_getSearchEngineLogoFromUrl('http://bing.com');
-        $alexaLogo = Piwik_getSearchEngineLogoFromUrl('http://alexa.com');
-        $dmozLogo = Piwik_getSearchEngineLogoFromUrl('http://dmoz.org');
-        $linkToMajestic = Piwik_SEO_MajesticClient::getLinkForUrl(Piwik_Site::getMainUrlFor($idSite));
-          
-        $majesticMetadata = array(
-            'logo' => 'plugins/SEO/images/majesticseo.png',
-            'url' => $linkToMajestic,
-            'url_tooltip' => Piwik_Translate('SEO_ViewBacklinksOnMajesticSEO')
-        );
-          
-        $metadataToAdd = array(
-            Piwik_SEO::GOOGLE_PAGE_RANK_METRIC_NAME => array('logo' => $googleLogo, 'id' => 'pagerank'),
-            Piwik_SEO::GOOGLE_INDEXED_PAGE_COUNT => array('logo' => $googleLogo, 'id' => 'google-index'),
-            Piwik_SEO::BING_INDEXED_PAGE_COUNT => array('logo' => $bingLogo, 'id' => 'bing-index'),
-            Piwik_SEO::ALEXA_RANK_METRIC_NAME => array('logo' => $alexaLogo, 'id' => 'alexa'),
-            Piwik_SEO::DMOZ_METRIC_NAME => array('logo' => $dmozLogo, 'id' => 'dmoz'),
-            Piwik_SEO::SITE_AGE_LABEL => array('logo' => 'plugins/SEO/images/whois.png', 'id' => 'domain-age'),
-            Piwik_SEO::BACKLINK_COUNT => array_merge($majesticMetadata, array('id' => 'external-backlinks')),
-            Piwik_SEO::REFERRER_DOMAINS_COUNT => array_merge($majesticMetadata, array('id' => 'referrer-domains')),
-        );
-        
-        $this->addSEOMetadata($result, $metadataToAdd);
-        
-        // translate labels
-        $translateSeoMetricName = array('Piwik_SEO_API', 'translateSeoMetricName');
-        $result->filter('ColumnCallbackReplace', array('label', $translateSeoMetricName, array(Piwik_SEO::$seoMetricTranslations)));
-          
+        $this->addSEOMetadataToStatsTable($result, Piwik_Site::getMainUrlFor($idSite));
+        $this->translateSEOMetricLabels($result);
         return $result;
-    }
-     
-    /**
-     * TODO (move + docs)
-     */
-    public static function translateSeoMetricName( $metricName, $translations )
-    {
-        if (isset($translations[$metricName])) {
-            return Piwik_Translate($translations[$metricName]);
-        }
-        return $metricName;
     }
     
     /**
-     * TODO
+     * Returns the birth time of a website's domain in seconds since the epoch.
+     * 
+     * @param int $idSite
+     * @return int
      */
-    public function getSiteBirthTime( $idSite )
+    public function getSiteBirthTime($idSite)
     {
         $siteBirthOption = Piwik_SEO::getSiteBirthOptionName($idSite);
         $siteBirthTime = Piwik_GetOption($siteBirthOption);
         
         if ($siteBirthTime === false) {
             $rank = new Piwik_SEO_RankChecker(Piwik_Site::getMainUrlFor($idSite));
+            
             $siteAge = $rank->getAge($prettyFormatAge = false);
             $siteBirthTime = time() - $siteAge;
+            
             Piwik_SetOption($siteBirthOption, $siteBirthTime);
         }
         
         return $siteBirthTime;
     }
     
-    /** TODO: deprecate
+    /**
      * Returns SEO statistics for a URL.
      *
      * @param string $url URL to request SEO stats for
      * @return Piwik_DataTable
      */
-    public function getRank($url)
-    {$ex = new Exception();echo '<pre>'.$ex->getTraceAsString().'</pre>';
+    public function getSEOStatsForUrl($url)
+    {
         Piwik::checkUserHasSomeViewAccess();
-        $rank = new Piwik_SEO_RankChecker($url);
-
-        $linkToMajestic = Piwik_SEO_MajesticClient::getLinkForUrl($url);
-
-        $data = array(
-            'Google PageRank'                          => array(
-                'rank' => $rank->getPageRank(),
-                'logo' => Piwik_getSearchEngineLogoFromUrl('http://google.com'),
-                'id'   => 'pagerank'
-            ),
-            Piwik_Translate('SEO_Google_IndexedPages') => array(
-                'rank' => $rank->getIndexedPagesGoogle(),
-                'logo' => Piwik_getSearchEngineLogoFromUrl('http://google.com'),
-                'id'   => 'google-index',
-            ),
-            Piwik_Translate('SEO_Bing_IndexedPages')   => array(
-                'rank' => $rank->getIndexedPagesBing(),
-                'logo' => Piwik_getSearchEngineLogoFromUrl('http://bing.com'),
-                'id'   => 'bing-index',
-            ),
-            Piwik_Translate('SEO_AlexaRank')           => array(
-                'rank' => $rank->getAlexaRank(),
-                'logo' => Piwik_getSearchEngineLogoFromUrl('http://alexa.com'),
-                'id'   => 'alexa',
-            ),
-            Piwik_Translate('SEO_DomainAge')           => array(
-                'rank' => $rank->getAge(),
-                'logo' => 'plugins/SEO/images/whois.png',
-                'id'   => 'domain-age',
-            ),
-            Piwik_Translate('SEO_ExternalBacklinks')   => array(
-                'rank'         => $rank->getExternalBacklinkCount(),
-                'logo'         => 'plugins/SEO/images/majesticseo.png',
-                'logo_link'    => $linkToMajestic,
-                'logo_tooltip' => Piwik_Translate('SEO_ViewBacklinksOnMajesticSEO'),
-                'id'           => 'external-backlinks',
-            ),
-            Piwik_Translate('SEO_ReferrerDomains')     => array(
-                'rank'         => $rank->getReferrerDomainCount(),
-                'logo'         => 'plugins/SEO/images/majesticseo.png',
-                'logo_link'    => $linkToMajestic,
-                'logo_tooltip' => Piwik_Translate('SEO_ViewBacklinksOnMajesticSEO'),
-                'id'           => 'referrer-domains',
-            ),
-        );
-
-        // Add DMOZ only if > 0 entries found
-        $dmozRank = array(
-            'rank' => $rank->getDmoz(),
-            'logo' => Piwik_getSearchEngineLogoFromUrl('http://dmoz.org'),
-            'id'   => 'dmoz',
-        );
-        if ($dmozRank['rank'] > 0) {
-            $data[Piwik_Translate('SEO_Dmoz')] = $dmozRank;
-        }
-
+        
+        $rankChecker = new Piwik_SEO_RankChecker($url);
+        $stats = $rankChecker->getAllStats();
+        $stats['site_age'] = $rankChecker->getAge($prettyFormatAge = true);
+        
         $dataTable = new Piwik_DataTable();
-        $dataTable->addRowsFromArrayWithIndexLabel($data);
+        $dataTable->addRowsFromArrayWithIndexLabel($stats);
+        $this->addSEOMetadataToStatsTable($dataTable, $url);
+        $this->translateSEOMetricLabels($dataTable);
         return $dataTable;
     }
 
@@ -245,14 +162,43 @@ class Piwik_SEO_API
         }
     }
     
-    private function addSEOMetadata($table, $metadataToAdd)
+    private function addSEOMetadataToStatsTable($table, $url)
+    {
+        // set metadata for individual rows
+        $googleLogo = Piwik_getSearchEngineLogoFromUrl('http://google.com');
+        $bingLogo = Piwik_getSearchEngineLogoFromUrl('http://bing.com');
+        $alexaLogo = Piwik_getSearchEngineLogoFromUrl('http://alexa.com');
+        $dmozLogo = Piwik_getSearchEngineLogoFromUrl('http://dmoz.org');
+        $linkToMajestic = Piwik_SEO_MajesticClient::getLinkForUrl($url);
+          
+        $majesticMetadata = array(
+            'logo' => 'plugins/SEO/images/majesticseo.png',
+            'url' => $linkToMajestic,
+            'url_tooltip' => Piwik_Translate('SEO_ViewBacklinksOnMajesticSEO')
+        );
+          
+        $metadataToAdd = array(
+            Piwik_SEO::GOOGLE_PAGE_RANK_METRIC_NAME => array('logo' => $googleLogo, 'id' => 'pagerank'),
+            Piwik_SEO::GOOGLE_INDEXED_PAGE_COUNT => array('logo' => $googleLogo, 'id' => 'google-index'),
+            Piwik_SEO::BING_INDEXED_PAGE_COUNT => array('logo' => $bingLogo, 'id' => 'bing-index'),
+            Piwik_SEO::ALEXA_RANK_METRIC_NAME => array('logo' => $alexaLogo, 'id' => 'alexa'),
+            Piwik_SEO::DMOZ_METRIC_NAME => array('logo' => $dmozLogo, 'id' => 'dmoz'),
+            Piwik_SEO::SITE_AGE_LABEL => array('logo' => 'plugins/SEO/images/whois.png', 'id' => 'domain-age'),
+            Piwik_SEO::BACKLINK_COUNT => array_merge($majesticMetadata, array('id' => 'external-backlinks')),
+            Piwik_SEO::REFERRER_DOMAINS_COUNT => array_merge($majesticMetadata, array('id' => 'referrer-domains')),
+        );
+        
+        $this->addSEOMetadataToRows($table, $metadataToAdd);
+    }
+    
+    private function addSEOMetadataToRows($table, $metadataToAdd)
     {
         if ($table instanceof Piwik_DataTable_Array) {
             foreach ($table->getArray() as $childTable) {
-                $this->addSEOMetadata($childTable, $metadataToAdd);
+                $this->addSEOMetadataToRows($childTable, $metadataToAdd);
             }
         } else {
-            // turn site_birth into age (TODO: do in controller?)
+            // turn site_birth into age
             $row = $table->getRowFromLabel('site_birth');
             if ($row) {
                 $prettyAge = Piwik::getPrettyTimeFromSeconds(time() - $row->getColumn('value'));
@@ -273,5 +219,25 @@ class Piwik_SEO_API
                 }
             }
         }
+    }
+     
+    private function translateSEOMetricLabels($table)
+    {
+        $translateSeoMetricName = array('Piwik_SEO_API', 'translateSeoMetricName');
+        $table->filter('ColumnCallbackReplace', array('label', $translateSeoMetricName, array(Piwik_SEO::$seoMetricTranslations)));
+    }
+    
+    /**
+     * Translates SEO metric name using a set of translations. Used as datatable
+     * filter callback.
+     * 
+     * @ignore
+     */
+    public static function translateSeoMetricName( $metricName, $translations )
+    {
+        if (isset($translations[$metricName])) {
+            return Piwik_Translate($translations[$metricName]);
+        }
+        return $metricName;
     }
 }
