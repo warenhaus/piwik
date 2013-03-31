@@ -196,7 +196,10 @@ class Piwik_SEO_RankChecker
     }
     
     /**
-     * TODO
+     * Returns all SEO statistics for the URL this instance holds.
+     * Domain age is not returned as it is not an SEO metric.
+     * 
+     * @return array Values indexed by their archive names @see Piwik_SEO.
      */
     public function getAllStats()
     {

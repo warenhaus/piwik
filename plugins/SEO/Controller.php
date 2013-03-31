@@ -14,7 +14,7 @@
  */
 class Piwik_SEO_Controller extends Piwik_Controller
 {
-    function getSEOStatsForSite()// TODO rename
+    function getSEOStatsForSite()
     {
         $idSite = Piwik_Common::getRequestVar('idSite');
         $site = new Piwik_Site($idSite);

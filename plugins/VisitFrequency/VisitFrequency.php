@@ -50,7 +50,7 @@ class Piwik_VisitFrequency extends Piwik_Plugin
     }
 
 	/**
-	 * TODO
+	 * Checks if a metric is calculated by the VisitFrequency plugin.
 	 */
 	public function getPluginOfMetric( $notification )
 	{
