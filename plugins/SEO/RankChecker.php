@@ -167,7 +167,7 @@ class Piwik_SEO_RankChecker
         }
 
         if ($maxAge) {
-        	$maxAge = time() - $maxAge;
+            $maxAge = time() - $maxAge;
             return $prettyFormatAge ? Piwik::getPrettyTimeFromSeconds($maxAge) : $maxAge;
         }
         return false;

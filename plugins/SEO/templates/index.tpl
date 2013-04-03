@@ -16,7 +16,7 @@
                 {'General_Error'|translate}
             {else}
                 {capture name=cleanUrl}
-                <a href='http://{$urlToRank|escape:'html'}' target='_blank'>{$urlToRank|escape:'html'}</a>
+                    <a href='http://{$urlToRank|escape:'html'}' target='_blank'>{$urlToRank|escape:'html'}</a>
                 {/capture}
                 {'SEO_SEORankingsFor'|translate:$smarty.capture.cleanUrl}
                 <table cellspacing='2' style='margin:auto;line-height:1.5em;padding-top:10px'>

@@ -189,7 +189,9 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
         // re-enable tag cloud shuffling
         Piwik_Visualization_Cloud::$debugDisableShuffle = true;
         
-        Piwik_SEO::$customRankCheckerClassName = null;
+        if (class_exists('Piwik_SEO')) {
+            Piwik_SEO::$customRankCheckerClassName = null;
+        }
     }
 
     public function setUp()

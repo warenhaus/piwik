@@ -33,7 +33,7 @@
 	<row>
 		<label>External Backlinks (Majestic)</label>
 		<value>7</value>
-		<logo>plugins/SEO/images/majesticseo.png</logo>
+		<logo>plugins/Referers/images/searchEngines/www.majesticseo.com.png</logo>
 		<url>http://www.majesticseo.com/reports/site-explorer/summary/piwik.org?IndexDataSource=F&amp;pk_campaign=piwik</url>
 		<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
 		<id>external-backlinks</id>
@@ -41,7 +41,7 @@
 	<row>
 		<label>Referrer Domains (Majestic)</label>
 		<value>8</value>
-		<logo>plugins/SEO/images/majesticseo.png</logo>
+		<logo>plugins/Referers/images/searchEngines/www.majesticseo.com.png</logo>
 		<url>http://www.majesticseo.com/reports/site-explorer/summary/piwik.org?IndexDataSource=F&amp;pk_campaign=piwik</url>
 		<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
 		<id>referrer-domains</id>
