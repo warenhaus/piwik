@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <result>
 	<row>
+		<category>SEO</category>
+		<name>SEO Rankings</name>
+		<module>SEO</module>
+		<action>getSEOStats</action>
+		<dimension>Value</dimension>
+		<metrics>
+			<ggl_page_rank>Google PageRank</ggl_page_rank>
+			<ggl_indexed_pages>Google indexed pages</ggl_indexed_pages>
+			<alexa_rank>Alexa Rank</alexa_rank>
+			<dmoz>DMOZ entries</dmoz>
+			<bing_indexed_pages>Bing indexed pages</bing_indexed_pages>
+			<backlinks>External Backlinks (Majestic)</backlinks>
+			<referrer_domains>Referrer Domains (Majestic)</referrer_domains>
+		</metrics>
+		<imageGraphUrl>index.php?module=API&amp;method=ImageGraph.get&amp;idSite=1&amp;apiModule=SEO&amp;apiAction=getSEOStats&amp;period=day&amp;date=2009-01-04</imageGraphUrl>
+		<imageGraphEvolutionUrl>index.php?module=API&amp;method=ImageGraph.get&amp;idSite=1&amp;apiModule=SEO&amp;apiAction=getSEOStats&amp;period=day&amp;date=2008-12-06,2009-01-04</imageGraphEvolutionUrl>
+		<uniqueId>SEO_getSEOStats</uniqueId>
+	</row>
+	<row>
 		<category>All Websites</category>
 		<name>Single Website dashboard</name>
 		<module>MultiSites</module>

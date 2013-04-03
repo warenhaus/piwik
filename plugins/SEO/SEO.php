@@ -100,6 +100,7 @@ class Piwik_SEO extends Piwik_Plugin
             'action' => 'getSEOStats',
             'dimension' => Piwik_Translate('General_Value'),
             'metrics' => $metrics,
+            'metricsDocumentation' => array(),
             'processedMetrics' => false,
             'order' => 1
         );

@@ -166,7 +166,6 @@ class Test_Piwik_Integration_RowEvolution extends IntegrationTestCase
                 'apiModule'                                => 'SEO',
                 'apiAction'                                => 'getSEOStats',
                 'label'                                    => 'SEO Stats',
-                'filter_add_columns_when_show_all_columns' => '0'
             )
         ));
 

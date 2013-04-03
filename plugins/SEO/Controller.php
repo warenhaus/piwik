@@ -31,7 +31,7 @@ class Piwik_SEO_Controller extends Piwik_Controller
         
         $dataTable = Piwik_SEO_API::getInstance()->getSEOStats($idSite, 'day', $date, $full = true);
         
-        $view = $this->getSEOStatsWidgetView($dataTable, $url, $date); // TODO: for period != day, need to display actual date of metrics.
+        $view = $this->getSEOStatsWidgetView($dataTable, $url, $date);
         echo $view->render();
     }
     

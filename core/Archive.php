@@ -444,8 +444,8 @@ abstract class Piwik_Archive
     }
 
     /**
-     * Disables the optimization that checks for visits and if none are found, it is
-     * assumed there are no metrics to be found.
+     * Disables the optimization that checks if there are no visits for a period
+     * and site, and skips querying/archiving if this is the case.
      */
     public function performQueryWhenNoVisits()
     {

@@ -1327,12 +1327,16 @@ class Piwik_API_API
         if
         (
             $apiModule != 'Actions'
-            && $apiModule != 'SEO'
             &&
             ($apiModule != 'Goals' || ($apiAction != 'getVisitsUntilConversion' && $apiAction != 'getDaysToConversion'))
             && $label // do not request processed metrics when retrieving top n labels
         ) {
             $parameters['filter_add_columns_when_show_all_columns'] = '1';
+        }
+        
+        // SEO metrics can exist even if there are no visits.
+        if ($apiModule == 'SEO') {
+            $parameters['filter_add_columns_when_show_all_columns'] = '0';
         }
 
         $url = Piwik_Url::getQueryStringFromParameters($parameters);

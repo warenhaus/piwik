@@ -11,7 +11,6 @@
           </span>
           <span id="ajaxLoadingSEO" class='loadingPiwik' style='display:none'><img src='./themes/default/images/loading-blue.gif'/></span>
         </div>
-    {* TODO Check if should remove SEO_Rank *}
         <div id="rankStats" align="left" style="margin-top:1em;">
             {if empty($ranks)}
                 {'General_Error'|translate}

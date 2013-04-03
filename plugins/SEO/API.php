@@ -185,7 +185,7 @@ class Piwik_SEO_API
         $linkToMajestic = Piwik_SEO_MajesticClient::getLinkForUrl($url);
           
         $majesticMetadata = array(
-            'logo' => 'plugins/SEO/images/majesticseo.png',
+            'logo' => Piwik_getSearchEngineLogoFromUrl('http://www.majesticseo.com'),
             'url' => $linkToMajestic,
             'url_tooltip' => Piwik_Translate('SEO_ViewBacklinksOnMajesticSEO')
         );

@@ -159,7 +159,8 @@ abstract class Piwik_Archive_Array extends Piwik_Archive
     }
 
     /**
-     * TODO
+     * Disables the optimization that checks if there are no visits for a period
+     * and site, and skips querying/archiving if this is the case.
      */
     public function performQueryWhenNoVisits()
     {
