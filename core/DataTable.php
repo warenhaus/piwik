@@ -509,7 +509,7 @@ class Piwik_DataTable
     /**
      * Rebuilds the index used to lookup a row by label
      */
-    public function rebuildIndex()
+    private function rebuildIndex()
     {
         foreach ($this->rows as $id => $row) {
             $label = $row->getColumn('label');
