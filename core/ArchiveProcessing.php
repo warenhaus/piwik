@@ -234,7 +234,7 @@ abstract class Piwik_ArchiveProcessing
      * @throws Exception
      * @return Piwik_ArchiveProcessing Piwik_ArchiveProcessing_Day|Piwik_ArchiveProcessing_Period
      */
-    static function factory($name)
+    public static function factory($name)
     {
         switch ($name) {
             case 'day':
@@ -264,7 +264,7 @@ abstract class Piwik_ArchiveProcessing
     const OPTION_TODAY_ARCHIVE_TTL = 'todayArchiveTimeToLive';
     const OPTION_BROWSER_TRIGGER_ARCHIVING = 'enableBrowserTriggerArchiving';
 
-    static public function getCoreMetrics()
+    public static function getCoreMetrics()
     {
         return array(
             'nb_uniq_visitors',
@@ -276,7 +276,7 @@ abstract class Piwik_ArchiveProcessing
         );
     }
 
-    static public function setTodayArchiveTimeToLive($timeToLiveSeconds)
+    public static function setTodayArchiveTimeToLive($timeToLiveSeconds)
     {
         $timeToLiveSeconds = (int)$timeToLiveSeconds;
         if ($timeToLiveSeconds <= 0) {
@@ -285,7 +285,7 @@ abstract class Piwik_ArchiveProcessing
         Piwik_SetOption(self::OPTION_TODAY_ARCHIVE_TTL, $timeToLiveSeconds, $autoload = true);
     }
 
-    static public function getTodayArchiveTimeToLive()
+    public static function getTodayArchiveTimeToLive()
     {
         $timeToLive = Piwik_GetOption(self::OPTION_TODAY_ARCHIVE_TTL);
         if ($timeToLive !== false) {
@@ -294,7 +294,7 @@ abstract class Piwik_ArchiveProcessing
         return Piwik_Config::getInstance()->General['time_before_today_archive_considered_outdated'];
     }
 
-    static public function setBrowserTriggerArchiving($enabled)
+    public static function setBrowserTriggerArchiving($enabled)
     {
         if (!is_bool($enabled)) {
             throw new Exception('Browser trigger archiving must be set to true or false.');
@@ -303,7 +303,7 @@ abstract class Piwik_ArchiveProcessing
         Piwik_Tracker_Cache::clearCacheGeneral();
     }
 
-    static public function isBrowserTriggerArchivingEnabled()
+    public static function isBrowserTriggerArchivingEnabled()
     {
         $browserArchivingEnabled = Piwik_GetOption(self::OPTION_BROWSER_TRIGGER_ARCHIVING);
         if ($browserArchivingEnabled !== false) {
@@ -652,7 +652,7 @@ abstract class Piwik_ArchiveProcessing
         return $this->requestedReport;
     }
 
-    static public function getPluginBeingProcessed($requestedReport)
+    public static function getPluginBeingProcessed($requestedReport)
     {
         $plugin = substr($requestedReport, 0, strpos($requestedReport, '_'));
         if (empty($plugin)
@@ -702,6 +702,7 @@ abstract class Piwik_ArchiveProcessing
     /**
      * Returns the idArchive we will use for the current archive
      *
+     * @throws Exception
      * @return int IdArchive to use when saving the current Archive
      */
     protected function loadNextIdarchive()
@@ -834,9 +835,11 @@ abstract class Piwik_ArchiveProcessing
 
     /**
      * Inserts a record in the right table (either NUMERIC or BLOB)
-     * @param $name
-     * @param $value
-     * @return
+     *
+     * @param string  $name
+     * @param mixed   $value
+     *
+     * @return void
      */
     protected function insertRecord($name, $value)
     {

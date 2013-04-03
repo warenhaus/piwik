@@ -146,7 +146,7 @@ class Piwik_DataTable
     /**
      * Maximum nesting level.
      */
-    static private $maximumDepthLevelAllowed = self::MAX_DEPTH_DEFAULT;
+    private static $maximumDepthLevelAllowed = self::MAX_DEPTH_DEFAULT;
 
     /**
      * Array of Piwik_DataTable_Row
@@ -355,7 +355,7 @@ class Piwik_DataTable
     /**
      * Saves the current number of rows
      */
-    function setRowsCountBeforeLimitFilter()
+    public function setRowsCountBeforeLimitFilter()
     {
         $this->rowsCountBeforeLimitFilter = $this->getRowsCount();
     }
@@ -560,6 +560,7 @@ class Piwik_DataTable
      * Add a row to the table and rebuild the index if necessary
      *
      * @param Piwik_DataTable_Row $row  to add at the end of the array
+     * @return Piwik_DataTable_Row
      */
     public function addRow(Piwik_DataTable_Row $row)
     {
@@ -810,9 +811,10 @@ class Piwik_DataTable
     /**
      * Deletes the ith row
      *
-     * @param int $id
+     * @param int  $id
+     *
      * @throws Exception if the row $id cannot be found
-     * @return
+     * @return void
      */
     public function deleteRow($id)
     {
@@ -895,7 +897,7 @@ class Piwik_DataTable
      * @param Piwik_DataTable $table2
      * @return bool
      */
-    static public function isEqual(Piwik_DataTable $table1, Piwik_DataTable $table2)
+    public static function isEqual(Piwik_DataTable $table1, Piwik_DataTable $table2)
     {
         $rows1 = $table1->getRows();
         $rows2 = $table2->getRows();
@@ -1067,7 +1069,7 @@ class Piwik_DataTable
      *                             array( col1_name => valueB, col2_name => valueD, ...),
      *                       )
      * @throws Exception
-     * @return
+     * @return void
      */
     public function addRowsFromSimpleArray($array)
     {
@@ -1231,7 +1233,7 @@ class Piwik_DataTable
      *
      * @param int $atLeastLevel
      */
-    static public function setMaximumDepthLevelAllowedAtLeast($atLeastLevel)
+    public static function setMaximumDepthLevelAllowedAtLeast($atLeastLevel)
     {
         self::$maximumDepthLevelAllowed = max($atLeastLevel, self::$maximumDepthLevelAllowed);
         if (self::$maximumDepthLevelAllowed < 1) {
@@ -1290,18 +1292,18 @@ class Piwik_DataTable
      * Traverses a DataTable tree using an array of labels and returns the row
      * it finds or false if it cannot find one, and the number of segments of
      * the path successfully walked.
-     *
      * If $missingRowColumns is supplied, the specified path is created. When
      * a subtable is encountered w/o the queried label, a new row is created
      * with the label, and a subtable is added to the row.
      *
-     * @param array $path The path to walk. An array of label values.
-     * @param array|false $missingRowColumns
-     *                        The default columns to use when creating new arrays.
-     *                        If this parameter is supplied, new rows will be
-     *                        created if labels cannot be found.
-     * @param int $maxSubtableRows The maximum number of allowed rows in new
-     *                             subtables.
+     * @param array        $path            The path to walk. An array of label values.
+     * @param array|bool   $missingRowColumns
+     *                                      The default columns to use when creating new arrays.
+     *                                      If this parameter is supplied, new rows will be
+     *                                      created if labels cannot be found.
+     * @param int          $maxSubtableRows The maximum number of allowed rows in new
+     *                                      subtables.
+     *
      * @return array First element is the found row or false. Second element is
      *               the number of path segments walked. If a row is found, this
      *               will be == to count($path). Otherwise, it will be the index
@@ -1355,15 +1357,15 @@ class Piwik_DataTable
     }
 
     /**
-     * Returns a new DataTable that contains the rows of each of this table's
-     * subtables.
+     * Returns a new DataTable that contains the rows of each of this table's subtables.
      *
-     * @param string|false $labelColumn If supplied the label of the parent row will be
-     *                                  added to a new column in each subtable row. If set to,
+     * @param string|bool  $labelColumn       If supplied the label of the parent row will be
+     *                                        added to a new column in each subtable row. If set to,
      *                                  'label' each subtable row's label will be prepended w/
-     *                                  the parent row's label.
-     * @param bool $useMetadataColumn If true and if $labelColumn is supplied, the parent row's
-     *                                label will be added as metadata.
+     *                                        the parent row's label.
+     * @param bool         $useMetadataColumn If true and if $labelColumn is supplied, the parent row's
+     *                                        label will be added as metadata.
+     *
      * @return Piwik_DataTable
      */
     public function mergeSubtables($labelColumn = false, $useMetadataColumn = false)
