@@ -1,3 +1,4 @@
+{loadJavascriptTranslations plugins='SEO'}
 <div id='seo-ranks'>
     <script type="text/javascript" src="plugins/SEO/templates/rank.js"></script>
     
@@ -53,37 +54,3 @@
     </div>
     {/if}
 </div>
-{literal}
-<script type="text/javascript">
-$(document).ready(function() {// TODO: remove rank.js or move this there?
-    $('#seo-ranks .row-evolution-link').hover(
-        function() {
-            $('img', this).each(function() {
-                $(this).toggle();
-            });
-        }
-    ).click(function(e) {
-        e.preventDefault();
-        DataTable_RowActions_RowEvolution.launch('SEO.getSEOStatsWithoutMetadata', {/literal}"{'SEO_Stats'|translate}"{literal});
-        return false;
-    });
-    
-    $('#check-site-seo-btn').click(function() {
-        var ajaxRequest = new ajaxHelper();
-        ajaxRequest.setLoadingElement('#ajaxLoadingSEO');
-        ajaxRequest.addParams({
-            module: 'SEO',
-            action: 'getSEOStatsForUrl',
-            url: encodeURIComponent($('#seoUrl').val())
-        }, 'get');
-        ajaxRequest.setCallback(
-            function (response) {
-                $('#seo-ranks').html(response);
-            }
-        );
-        ajaxRequest.setFormat('html');
-        ajaxRequest.send(false);
-    });
-});
-</script>
-{/literal}

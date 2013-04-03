@@ -162,4 +162,15 @@ class Piwik_TaskScheduler
 
         return $message;
     }
+    
+    /**
+     * Sets the value used to determine whether the TaskScheduler is currently running.
+     * Only used for testing purposes.
+     * 
+     * @param bool $value
+     */
+    static public function setRunning( $value )
+    {
+        self::$running = $value;
+    }
 }

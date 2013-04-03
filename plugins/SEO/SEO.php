@@ -31,12 +31,12 @@ class Piwik_SEO extends Piwik_Plugin
     const DONE_ARCHIVE_NAME = 'SEO_done';
     
     /**
-     * Site birth time is stored as an option, and age is calculated in the API methods.
+     * Site creation time is stored as an option, and age is calculated in the API methods.
      * This is the label used in resulting datatables.
      */
     const SITE_AGE_LABEL = 'site_age';
     
-    const SITE_BIRTH_OPTION_PREFIX = 'site_birth_';
+    const SITE_CREATION_OPTION_PREFIX = 'site_creation_';
     
     public static $seoMetrics = array(
         self::GOOGLE_PAGE_RANK_METRIC_NAME,
@@ -59,6 +59,9 @@ class Piwik_SEO extends Piwik_Plugin
         self::SITE_AGE_LABEL => 'SEO_DomainAge'
     );
     
+    /** Name of a custom RankChecker class to use. Used for testing this plugin. */
+    public static $customRankCheckerClassName = null;
+    
     public function getInformation()
     {
         return array(
@@ -72,11 +75,11 @@ class Piwik_SEO extends Piwik_Plugin
     public function getListHooksRegistered()
     {
         $hooks = array(
-            'WidgetsList.add' => 'addWidgets',
-            'Archive.getPluginOfMetric' => 'getPluginOfMetric',
-            'API.getReportMetadata' => 'getReportMetadata',
-            'ArchiveProcessing_Day.compute' => 'archiveDay',
-            'ArchiveProcessing_Period.compute' => 'archivePeriod',
+            'WidgetsList.add'                          => 'addWidgets',
+            'Archive.getPluginNameForMetric'           => 'getPluginNameForMetric',
+            'API.getReportMetadata'                    => 'getReportMetadata',
+            'ArchiveProcessing_Day.computeNoVisits'    => 'archiveDay',
+            'ArchiveProcessing_Period.computeNoVisits' => 'archivePeriod',
         );
         return $hooks;
     }
@@ -96,19 +99,9 @@ class Piwik_SEO extends Piwik_Plugin
             'module' => 'SEO',
             'action' => 'getSEOStats',
             'dimension' => Piwik_Translate('General_Value'),
-            'metrics' => array_merge($metrics, array('site_age' => self::$seoMetricTranslations['site_age'])),
-            'processedMetrics' => false,
-            'order' => 1
-        );
-        $reports[] = array(
-            'category' => 'SEO',
-            'name' => Piwik_Translate('SEO_SeoRankings').' without metadata',
-            'module' => 'SEO',
-            'action' => 'getSEOStatsWithoutMetadata',
-            'dimension' => Piwik_Translate('General_Value'),
             'metrics' => $metrics,
             'processedMetrics' => false,
-            'order' => 2
+            'order' => 1
         );
     }
     
@@ -117,13 +110,10 @@ class Piwik_SEO extends Piwik_Plugin
         Piwik_AddWidget('SEO', 'SEO_SeoRankings', 'SEO', 'getSEOStatsForSite');
     }
     
-    public function getPluginOfMetric( $notification )
+    public function getPluginNameForMetric( $notification )
     {
         $pluginName =& $notification->getNotificationObject();
         $metricName = $notification->getNotificationInfo();
-        
-        $parts = explode('-', $metricName);
-        $metricName = reset($parts);
         
         if ($pluginName === false
             && (in_array($metricName, self::$seoMetrics)
@@ -151,32 +141,33 @@ class Piwik_SEO extends Piwik_Plugin
     {
         $archiveProcessing = $notification->getNotificationObject();
         
-        if (!$this->shouldArchiveForSite($archiveProcessing->site->getId())) {
+        $site = $archiveProcessing->site;
+        $date = $archiveProcessing->period->getDateStart();
+        if (!$archiveProcessing->shouldProcessReportsForPlugin($this->getPluginName())
+            || !$this->shouldArchiveForSite($site->getId())
+            || !$this->shouldArchiveForDate($date, $site->getTimezone())
+        ) {
             return;
         }
         
-        // if the archive processing date is not today, do nothing. we cannot
-        // get data from the past, unfortunately. TODO: doublecheck timezone logic
-        $today = Piwik_Date::factory('now', $archiveProcessing->site->getTimezone())->toString();
-        if ($archiveProcessing->period->getDateStart()->toString() != $today) {
+        $archive = $this->makeArchiveQuery($archiveProcessing);
+        if ($archive === null) {
             return;
         }
         
         // check if seo archiving has been completed successfully
-        $archive = $archiveProcessing->makeArchiveQuery();
-        $archive->performQueryWhenNoVisits();
         $isSEOArchivingDone = $archive->getNumeric(self::DONE_ARCHIVE_NAME);
         
         // if archiving has not been completed successfully, issue HTTP requests
-        // otherwise, use old statistics
+        // otherwise, use archived statistics
         if ($isSEOArchivingDone) {
             $dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics);
             $stats = $this->getColumnsOfFirstRow($dataTable);
         } else {
             $siteUrl = $archive->getSite()->getMainUrl();
         
-            $rank = new Piwik_SEO_RankChecker($siteUrl);
-            $stats = $rank->getAllStats();
+            $rankChecker = self::makeRankChecker($siteUrl, $date);
+            $stats = $rankChecker->getAllStats();
         }
         
         // insert statistics w/ new idarchive
@@ -185,7 +176,9 @@ class Piwik_SEO extends Piwik_Plugin
         }
         
         // finished SEO archiving (unless the Majestic API returned nothing)
-        if ($stats[self::BACKLINK_COUNT] !== false
+        if (isset($stats[self::BACKLINK_COUNT])
+            && $stats[self::BACKLINK_COUNT] !== false
+            && isset($stats[self::REFERRER_DOMAINS_COUNT])
             && $stats[self::REFERRER_DOMAINS_COUNT] !== false
         ) {
             $archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
@@ -203,13 +196,21 @@ class Piwik_SEO extends Piwik_Plugin
     {
         $archiveProcessing = $notification->getNotificationObject();
         
+        $site = $archiveProcessing->site;
+        if (!$archiveProcessing->shouldProcessReportsForPlugin($this->getPluginName())
+            || !$this->shouldArchiveForSite($site->getId())
+        ) {
+            return;
+        }
+        
         // get seo metrics for the last day in the current period
         $lastDay = $archiveProcessing->period->getDateEnd()->toString();
-        $archive = $archiveProcessing->makeArchiveQuery($idSite = false, $period = 'day', $date = $lastDay);
-        $archive->performQueryWhenNoVisits();
+        $archive = $this->makeArchiveQuery($archiveProcessing, $period = 'day', $date = $lastDay);
+        if ($archive === null) {
+            return;
+        }
         
         $dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics);
-        
         $stats = $this->getColumnsOfFirstRow($dataTable);
         
         // insert metrics for new period
@@ -223,9 +224,9 @@ class Piwik_SEO extends Piwik_Plugin
      * 
      * @return string
      */
-    public static function getSiteBirthOptionName( $idSite )
+    public static function getSiteCreationOptionName( $idSite )
     {
-        return self::SITE_BIRTH_OPTION_PREFIX.$idSite;
+        return self::SITE_CREATION_OPTION_PREFIX.$idSite;
     }
     
     private function getColumnsOfFirstRow($dataTable)
@@ -244,12 +245,88 @@ class Piwik_SEO extends Piwik_Plugin
      */
     private function shouldArchiveForSite($idSite)
     {
+        // if the browser initiated archiving, then we always archive
+        if (!Piwik_TaskScheduler::isTaskBeingExecuted()) {
+            return true;
+        }
+        
         $seoMaxSitesToArchiveMetricsFor =
             Piwik_Config::getInstance()->General['seo_max_sites_to_archive_metrics_for'];
         
         $allIdSites = Piwik_SitesManager_API::getAllSitesId();
-        $idSitesToArchiveFor = array_slice($allIdSites, 0, 100);
+        $idSitesToArchiveFor = array_slice($allIdSites, 0, $seoMaxSitesToArchiveMetricsFor);
         
         return in_array($idSite, $idSitesToArchiveFor);
+    }
+    
+    /**
+     * Returns true if we should archive SEO metrics for a date. Archiving
+     * is not done if the archive processing date is not today, since we
+     * cannot get data from the past.
+     * 
+     * @param Piwik_Date $date
+     * @param string $siteTimezone Timezone of the site we're archiving data for.
+     * @return bool
+     */
+    private function shouldArchiveForDate($date, $siteTimezone)
+    {
+        $today = Piwik_Date::factory('now', $siteTimezone)->toString();
+        return $date->toString() == $today || self::$customRankCheckerClassName !== null;
+    }
+    
+    /**
+     * Creates a RankChecker instance that can be used to query third party services
+     * for SEO stats. If self::$customRankCheckerClassName is set to a non-null value,
+     * that result is an instance of that class name.
+     * 
+     * All code that uses the Piwik_SEO_RankChecker class should use this function so
+     * the SEO plugin can be tested.
+     * 
+     * @param string $url
+     * @param Piwik_Date|null The archiving date. For testing purposes.
+     */
+    public static function makeRankChecker($url, $date = null)
+    {
+        if (self::$customRankCheckerClassName === null) {
+            return new Piwik_SEO_RankChecker($url);
+        } else {
+            return new self::$customRankCheckerClassName($url, $date);
+        }
+    }
+    
+    /**
+     * Returns a Piwik_Archive instance that can be used to query existing SEO metrics
+     * while archiving for another date.
+     */
+    private function makeArchiveQuery($archiveProcessing, $period = false, $date = false)
+    {
+        $archive = $archiveProcessing->makeArchiveQuery($idSite = false, $period, $date);
+        $archive->setRequestedReport('SEO_Metrics');
+        
+        // in some cases (like when the date is after today), archiveProcessing will be null
+        // in this case, we should avoid SEO archiving
+        $archive->prepareArchive();
+        if ($archive->archiveProcessing === null) {
+            return null;
+        }
+        
+        $archive->performQueryWhenNoVisits();
+        
+        return $archive;
+    }
+    
+    /**
+     * Translates SEO metric name using a set of translations. Used as datatable
+     * filter callback.
+     * 
+     * @param string $metricName
+     * @param array $translations
+     */
+    public static function translateSeoMetricName( $metricName, $translations )
+    {
+        if (isset($translations[$metricName])) {
+            return Piwik_Translate($translations[$metricName]);
+        }
+        return $metricName;
     }
 }

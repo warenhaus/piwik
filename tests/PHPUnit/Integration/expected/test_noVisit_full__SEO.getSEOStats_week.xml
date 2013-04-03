@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<result>
+	<row>
+		<label>Google PageRank</label>
+		<value>4</value>
+		<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+		<id>pagerank</id>
+	</row>
+	<row>
+		<label>Google indexed pages</label>
+		<value>16</value>
+		<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+		<id>google-index</id>
+	</row>
+	<row>
+		<label>Alexa Rank</label>
+		<value>8</value>
+		<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+		<id>alexa</id>
+	</row>
+	<row>
+		<label>DMOZ entries</label>
+		<value>12</value>
+		<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+		<id>dmoz</id>
+	</row>
+	<row>
+		<label>Bing indexed pages</label>
+		<value>20</value>
+		<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+		<id>bing-index</id>
+	</row>
+	<row>
+		<label>External Backlinks (Majestic)</label>
+		<value>28</value>
+		<logo>plugins/SEO/images/majesticseo.png</logo>
+		<url>http://www.majesticseo.com/reports/site-explorer/summary/site.com?IndexDataSource=F&amp;pk_campaign=piwik</url>
+		<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+		<id>external-backlinks</id>
+	</row>
+	<row>
+		<label>Referrer Domains (Majestic)</label>
+		<value>32</value>
+		<logo>plugins/SEO/images/majesticseo.png</logo>
+		<url>http://www.majesticseo.com/reports/site-explorer/summary/site.com?IndexDataSource=F&amp;pk_campaign=piwik</url>
+		<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+		<id>referrer-domains</id>
+	</row>
+	<row>
+		<label>Domain Age</label>
+		<value>6 years 0 days</value>
+		<logo>plugins/SEO/images/whois.png</logo>
+		<id>domain-age</id>
+	</row>
+</result>

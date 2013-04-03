@@ -5,8 +5,20 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
  */
 
-$(document).ready(function () {
-    function getRank() {
+$(document).ready(function() {
+    $('#seo-ranks .row-evolution-link').hover(
+        function() {
+            $('img', this).each(function() {
+                $(this).toggle();
+            });
+        }
+    ).click(function(e) {
+        e.preventDefault();
+        DataTable_RowActions_RowEvolution.launch('SEO.getSEOStats', _pk_translate('SEO_Stats_js'));
+        return false;
+    });
+    
+    $('#check-site-seo-btn').click(function() {
         var ajaxRequest = new ajaxHelper();
         ajaxRequest.setLoadingElement('#ajaxLoadingSEO');
         ajaxRequest.addParams({
@@ -21,11 +33,6 @@ $(document).ready(function () {
         );
         ajaxRequest.setFormat('html');
         ajaxRequest.send(false);
-    }
-
-    // click on Rank button
-    $('#rankbutton').on('click', function () {
-        getRank();
-        return false;
     });
 });
+

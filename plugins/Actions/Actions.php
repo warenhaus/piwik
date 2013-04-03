@@ -57,16 +57,16 @@ class Piwik_Actions extends Piwik_Plugin
             'Menu.add'                         => 'addMenus',
             'API.getReportMetadata'            => 'getReportMetadata',
             'API.getSegmentsMetadata'          => 'getSegmentsMetadata',
-            'Archive.getPluginOfMetric'        => 'getPluginOfMetric',
+            'Archive.getPluginNameForMetric'   => 'getPluginNameForMetric',
         );
         return $hooks;
     }
 
     /**
-     * Event handler for Archive.getPluginOfMetric. Checks if a metric is an
+     * Event handler for Archive.getPluginNameForMetric. Checks if a metric is an
      * Actions metric.
      */
-    public function getPluginOfMetric( $notification )
+    public function getPluginNameForMetric( $notification )
     {
         $pluginName =& $notification->getNotificationObject();
         $metricName = $notification->getNotificationInfo();

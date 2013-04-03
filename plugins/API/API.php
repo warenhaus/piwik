@@ -1327,6 +1327,7 @@ class Piwik_API_API
         if
         (
             $apiModule != 'Actions'
+            && $apiModule != 'SEO'
             &&
             ($apiModule != 'Goals' || ($apiAction != 'getVisitsUntilConversion' && $apiAction != 'getDaysToConversion'))
             && $label // do not request processed metrics when retrieving top n labels

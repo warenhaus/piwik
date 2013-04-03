@@ -36,56 +36,33 @@ class Piwik_SEO_API
     }
     
     /**
-     * Returns SEO Stats in one row without any metadata. Does not return the
-     * age of a website.
-     * 
-     * @param int $idSite
-     * @param string $period
-     * @param string $date
-     * @return Piwik_DataTable
-     */
-    public function getSEOStatsWithoutMetadata($idSite, $period, $date)
-    {
-        if ($period == 'range') {
-            $oPeriod = new Piwik_Period_Range($period, $date);
-              
-            $period = 'day';
-            $date = $oPeriod->getDateEnd()->toString();
-        }
-        
-        $archive = Piwik_Archive::build($idSite, $period, $date);
-        $archive->performQueryWhenNoVisits();
-        
-        $result = $archive->getDataTableFromNumeric(Piwik_SEO::$seoMetrics);
-        $result->filter('ColumnCallbackAddColumn', array(array(), 'label', 'Piwik_Translate', array('SEO_Stats')));
-        return $result;
-    }
-    
-    /**
      * Returns SEO stats and site age with metadata (including the logo and any
      * pertinent links).
      * 
      * @param int $idSite
      * @param string $period
      * @param string $date
+     * @param bool $full Whether to return extra metadata and site age value or not.
      * @return Piwik_DataTable
      */
-    public function getSEOStats( $idSite, $period, $date )
+    public function getSEOStats( $idSite, $period, $date, $full = false )
     {
         $result = $this->getSEOStatsWithoutMetadata($idSite, $period, $date);
-        $result->filter('ColumnDelete', array('label'));
-        
-        // add row for site birth (only if $result is a table)
-        if ($result instanceof Piwik_DataTable) {
-            $siteBirth = $this->getSiteBirthTime($idSite);
+        if ($full) {
+            $result->filter('ColumnDelete', array('label'));
             
-            $row = $result->getFirstRow();
-            $row->setColumn('site_birth', $siteBirth);
+            // add row for site birth (only if $result is a table)
+            if ($result instanceof Piwik_DataTable) {
+                $siteCreation = $this->getSiteCreationTime($idSite);
+                
+                $row = $result->getFirstRow();
+                $row->setColumn('site_creation', $siteCreation);
+            }
+            
+            $result = $this->splitColumnsIntoRows($result);
+            $this->addSEOMetadataToStatsTable($result, Piwik_Site::getMainUrlFor($idSite));
+            $this->translateSEOMetricLabels($result);
         }
-        
-        $result = $this->splitColumnsIntoRows($result);
-        $this->addSEOMetadataToStatsTable($result, Piwik_Site::getMainUrlFor($idSite));
-        $this->translateSEOMetricLabels($result);
         return $result;
     }
     
@@ -94,22 +71,23 @@ class Piwik_SEO_API
      * 
      * @param int $idSite
      * @return int
+     * @ignore
      */
-    public function getSiteBirthTime($idSite)
+    public function getSiteCreationTime($idSite)
     {
-        $siteBirthOption = Piwik_SEO::getSiteBirthOptionName($idSite);
-        $siteBirthTime = Piwik_GetOption($siteBirthOption);
+        $siteCreationOption = Piwik_SEO::getSiteCreationOptionName($idSite);
+        $siteCreationTime = Piwik_GetOption($siteCreationOption);
         
-        if ($siteBirthTime === false) {
-            $rank = new Piwik_SEO_RankChecker(Piwik_Site::getMainUrlFor($idSite));
+        if ($siteCreationTime === false) {
+            $rank = Piwik_SEO::makeRankChecker(Piwik_Site::getMainUrlFor($idSite));
             
             $siteAge = $rank->getAge($prettyFormatAge = false);
-            $siteBirthTime = time() - $siteAge;
+            $siteCreationTime = time() - $siteAge;
             
-            Piwik_SetOption($siteBirthOption, $siteBirthTime);
+            Piwik_SetOption($siteCreationOption, $siteCreationTime);
         }
         
-        return $siteBirthTime;
+        return $siteCreationTime;
     }
     
     /**
@@ -122,15 +100,44 @@ class Piwik_SEO_API
     {
         Piwik::checkUserHasSomeViewAccess();
         
-        $rankChecker = new Piwik_SEO_RankChecker($url);
+        $rankChecker = Piwik_SEO::makeRankChecker($url);
         $stats = $rankChecker->getAllStats();
-        $stats['site_age'] = $rankChecker->getAge($prettyFormatAge = true);
+        $stats[Piwik_SEO::SITE_AGE_LABEL] = $rankChecker->getAge($prettyFormatAge = true);
         
         $dataTable = new Piwik_DataTable();
         $dataTable->addRowsFromArrayWithIndexLabel($stats);
         $this->addSEOMetadataToStatsTable($dataTable, $url);
         $this->translateSEOMetricLabels($dataTable);
         return $dataTable;
+    }
+    
+    /**
+     * @deprecated
+     */
+    public function getRank($url)
+    {
+        return $this->getSEOStatsForUrl($url);
+    }
+    
+    /**
+     * Returns SEO Stats in one row without any metadata. Does not return the
+     * age of a website.
+     */
+    private function getSEOStatsWithoutMetadata($idSite, $period, $date)
+    {
+        if ($period == 'range') {
+            $oPeriod = new Piwik_Period_Range($period, $date);
+            
+            $period = 'day';
+            $date = $oPeriod->getDateEnd()->toString();
+        }
+        
+        $archive = Piwik_Archive::build($idSite, $period, $date);
+        $archive->performQueryWhenNoVisits();
+        
+        $result = $archive->getDataTableFromNumeric(Piwik_SEO::$seoMetrics);
+        $result->filter('ColumnCallbackAddColumn', array(array(), 'label', 'Piwik_Translate', array('SEO_Stats_js')));
+        return $result;
     }
 
     private function splitColumnsIntoRows($table)
@@ -164,6 +171,12 @@ class Piwik_SEO_API
     
     private function addSEOMetadataToStatsTable($table, $url)
     {
+        $metadataToAdd = $this->getSEOMetadata($url);
+        $this->addSEOMetadataToRows($table, $metadataToAdd);
+    }
+    
+    private function getSEOMetadata($url)
+    {
         // set metadata for individual rows
         $googleLogo = Piwik_getSearchEngineLogoFromUrl('http://google.com');
         $bingLogo = Piwik_getSearchEngineLogoFromUrl('http://bing.com');
@@ -177,7 +190,7 @@ class Piwik_SEO_API
             'url_tooltip' => Piwik_Translate('SEO_ViewBacklinksOnMajesticSEO')
         );
           
-        $metadataToAdd = array(
+        return array(
             Piwik_SEO::GOOGLE_PAGE_RANK_METRIC_NAME => array('logo' => $googleLogo, 'id' => 'pagerank'),
             Piwik_SEO::GOOGLE_INDEXED_PAGE_COUNT => array('logo' => $googleLogo, 'id' => 'google-index'),
             Piwik_SEO::BING_INDEXED_PAGE_COUNT => array('logo' => $bingLogo, 'id' => 'bing-index'),
@@ -187,8 +200,6 @@ class Piwik_SEO_API
             Piwik_SEO::BACKLINK_COUNT => array_merge($majesticMetadata, array('id' => 'external-backlinks')),
             Piwik_SEO::REFERRER_DOMAINS_COUNT => array_merge($majesticMetadata, array('id' => 'referrer-domains')),
         );
-        
-        $this->addSEOMetadataToRows($table, $metadataToAdd);
     }
     
     private function addSEOMetadataToRows($table, $metadataToAdd)
@@ -198,16 +209,18 @@ class Piwik_SEO_API
                 $this->addSEOMetadataToRows($childTable, $metadataToAdd);
             }
         } else {
-            // turn site_birth into age
-            $row = $table->getRowFromLabel('site_birth');
+            // turn site_creation into age
+            $row = $table->getRowFromLabel('site_creation');
             if ($row) {
                 $prettyAge = Piwik::getPrettyTimeFromSeconds(time() - $row->getColumn('value'));
                 
-                $row->setColumn('label', 'site_age');
-                $row->setColumn('value', $prettyAge);
+                $newRow = new Piwik_DataTable_Row();
+                $newRow->setColumn('label', Piwik_SEO::SITE_AGE_LABEL);
+                $newRow->setColumn('value', $prettyAge);
+                
+                $table->deleteRow($table->getRowIdFromLabel('site_creation'));
+                $table->addRow($newRow);
             }
-            
-            $table->rebuildIndex();
             
             foreach ($metadataToAdd as $label => $metadata) {
                 $row = $table->getRowFromLabel($label);
@@ -223,21 +236,8 @@ class Piwik_SEO_API
      
     private function translateSEOMetricLabels($table)
     {
-        $translateSeoMetricName = array('Piwik_SEO_API', 'translateSeoMetricName');
-        $table->filter('ColumnCallbackReplace', array('label', $translateSeoMetricName, array(Piwik_SEO::$seoMetricTranslations)));
-    }
-    
-    /**
-     * Translates SEO metric name using a set of translations. Used as datatable
-     * filter callback.
-     * 
-     * @ignore
-     */
-    public static function translateSeoMetricName( $metricName, $translations )
-    {
-        if (isset($translations[$metricName])) {
-            return Piwik_Translate($translations[$metricName]);
-        }
-        return $metricName;
+        $translateSeoMetricName = array('Piwik_SEO', 'translateSeoMetricName');
+        $table->filter('ColumnCallbackReplace',
+            array('label', $translateSeoMetricName, array(Piwik_SEO::$seoMetricTranslations)));
     }
 }

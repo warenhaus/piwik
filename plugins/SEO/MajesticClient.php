@@ -29,7 +29,7 @@ class Piwik_SEO_MajesticClient
     public static function getLinkForUrl($targetSiteUrl)
     {
         $domain = @parse_url($targetSiteUrl, PHP_URL_HOST);
-        return "http://www.majesticseo.com/reports/site-explorer/summary/$domain?IndexDataSource=F";
+        return "http://www.majesticseo.com/reports/site-explorer/summary/$domain?IndexDataSource=F&pk_campaign=piwik";
     }
 
     /**

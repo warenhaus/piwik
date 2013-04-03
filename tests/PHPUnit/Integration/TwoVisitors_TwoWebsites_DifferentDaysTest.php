@@ -58,6 +58,7 @@ class Test_Piwik_Integration_TwoVisitors_TwoWebsites_DifferentDays extends Integ
 
         $apiToCall = $this->getApiToCall();
         $singlePeriodApi = array('VisitsSummary.get', 'Goals.get');
+        $seoApi = 'SEO.getSEOStats';
 
         $periods = array('day', 'week', 'month', 'year');
 
@@ -81,6 +82,19 @@ class Test_Piwik_Integration_TwoVisitors_TwoWebsites_DifferentDays extends Integ
                                           'periods'      => array('day', 'month'),
                                           'setDateLastN' => false,
                                           'testSuffix'   => '_NotLastNPeriods')),
+            
+            // test SEO API (w/ mock rank checker)
+            array($seoApi, array('idSite'       => 'all',
+                                 'date'         => $dateTime,
+                                 'periods'      => array('day', 'week'),
+                                 'setDateLastN' => true,
+                                 'testSuffix'   => '_LastPeriods')),
+            array($seoApi, array('idSite'                 => 'all',
+                                 'date'                   => $dateTime,
+                                 'periods'                => array('day', 'week'),
+                                 'setDateLastN'           => true,
+                                 'testSuffix'             => '_LastPeriods_full',
+                                 'otherRequestParameters' => array('full' => 1))),
         );
 
         // testing metadata API for multiple periods

@@ -87,7 +87,7 @@ class Piwik_Archive_Single extends Piwik_Archive
      * 
      * @var bool
      */
-    private $shouldLaunchArchivingOverride = true;
+    private $forceDisableArchiving = false;
     
     protected function clearCache()
     {
@@ -216,16 +216,14 @@ class Piwik_Archive_Single extends Piwik_Archive
 
             $this->archiveProcessing->setRequestedReport($this->getRequestedReport());
 
-            if (!$this->shouldLaunchArchivingOverride) {
-                $this->archiveProcessing->disableArchiving();
+            if ($this->forceDisableArchiving) {
+                $this->archiveProcessing->useOldArchiveIfPresent();
             }
             
             $archivingDisabledArchiveNotProcessed = false;
             $idArchive = $this->archiveProcessing->loadArchive();
             if (empty($idArchive)) {
-                if ($this->archiveProcessing->isArchivingDisabled()
-                    || !$this->shouldLaunchArchivingOverride
-                ) {
+                if ($this->isArchivingDisabled()) {
                     $archivingDisabledArchiveNotProcessed = true;
                     $logMessage = sprintf("Archiving disabled, for %s", $logMessage);
                 } else {
@@ -283,9 +281,7 @@ class Piwik_Archive_Single extends Piwik_Archive
             return $this->idArchive;
         }
 
-        if (!$this->isThereSomeVisits
-            && $this->doNotQueryIfNoVisits
-        ) {
+        if (!$this->shouldPerformQueries()) {
             return false;
         }
 
@@ -339,7 +335,6 @@ class Piwik_Archive_Single extends Piwik_Archive
         }
         return $value;
     }
-
 
     /**
      * This method loads in memory all the subtables for the main table called $name.
@@ -402,8 +397,7 @@ class Piwik_Archive_Single extends Piwik_Archive
     {
         $this->setRequestedReport($name);
         $this->prepareArchive();
-        if (!$this->isThereSomeVisits
-            && $this->doNotQueryIfNoVisits) {
+        if (!$this->shouldPerformQueries()) {
             return;
         }
 
@@ -591,7 +585,7 @@ class Piwik_Archive_Single extends Piwik_Archive
         }
         
         $pluginName = false;
-        Piwik_PostEvent('Archive.getPluginOfMetric', $pluginName, $metric);
+        Piwik_PostEvent('Archive.getPluginNameForMetric', $pluginName, $metric);
         
         if ($pluginName !== false) {
             return $pluginName.'_Metrics';
@@ -633,7 +627,8 @@ class Piwik_Archive_Single extends Piwik_Archive
      */
     public function isArchivingDisabled()
     {
-        return Piwik_ArchiveProcessing::isArchivingDisabledFor($this->segment, $this->period);
+        return $this->forceDisableArchiving
+             || Piwik_ArchiveProcessing::isArchivingDisabledFor($this->segment, $this->period);
     }
     
     /**
@@ -644,6 +639,17 @@ class Piwik_Archive_Single extends Piwik_Archive
      */
     public function disableArchiving()
     {
-        $this->shouldLaunchArchivingOverride = false;
+        $this->forceDisableArchiving = true;
+    }
+    
+    /**
+     * Returns true if this instance should perform queries to get metrics, or
+     * false if for some reason there is no need to.
+     * 
+     * @return bool
+     */
+    public function shouldPerformQueries()
+    {
+        return $this->isThereSomeVisits || !$this->doNotQueryIfNoVisits;
     }
 }

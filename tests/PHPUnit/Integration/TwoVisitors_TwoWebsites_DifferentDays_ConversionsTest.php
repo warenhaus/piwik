@@ -16,6 +16,18 @@ class Test_Piwik_Integration_TwoVisitors_TwoWebsites_DifferentDays_Conversions e
 {
     public static $fixture = null; // initialized below class definition
 
+    public function setUp()
+    {
+        Piwik_TaskScheduler::setRunning(true);
+        Piwik_Config::getInstance()->General['seo_max_sites_to_archive_metrics_for'] = 1;
+    }
+    
+    public function tearDown()
+    {
+        Piwik_TaskScheduler::setRunning(false);
+        Piwik_Config::getInstance()->General['seo_max_sites_to_archive_metrics_for'] = 100;
+    }
+
     /**
      * @dataProvider getApiForTesting
      * @group        Integration
@@ -93,6 +105,21 @@ class Test_Piwik_Integration_TwoVisitors_TwoWebsites_DifferentDays_Conversions e
                                        'testSuffix'             => '_getMetricsFromDifferentReports')
         );
 
+        // test SEO API with max_sites to archive for = 1
+        $seoApi = 'SEO.getSEOStats';$result = array();
+        $dateTime = self::$fixture->dateTime;
+        $result[] = array($seoApi, array('idSite'       => 'all',
+                                         'date'         => $dateTime,
+                                         'periods'      => 'day',
+                                         'setDateLastN' => true,
+                                         'testSuffix'   => '_LastPeriods'));
+        $result[] = array($seoApi, array('idSite'                 => 'all',
+                                         'date'                   => $dateTime,
+                                         'periods'                => 'day',
+                                         'setDateLastN'           => true,
+                                         'testSuffix'             => '_LastPeriods_full',
+                                         'otherRequestParameters' => array('full' => 1)));
+        
         return $result;
     }
 

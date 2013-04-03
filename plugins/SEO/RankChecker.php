@@ -208,7 +208,8 @@ class Piwik_SEO_RankChecker
             Piwik_SEO::GOOGLE_INDEXED_PAGE_COUNT => $this->getIndexedPagesGoogle(),
             Piwik_SEO::ALEXA_RANK_METRIC_NAME => $this->getAlexaRank(),
             Piwik_SEO::DMOZ_METRIC_NAME => $this->getDmoz(),
-            Piwik_SEO::BING_INDEXED_PAGE_COUNT => $this->getExternalBacklinkCount(),
+            Piwik_SEO::BING_INDEXED_PAGE_COUNT => $this->getIndexedPagesBing(),
+            Piwik_SEO::BACKLINK_COUNT => $this->getExternalBacklinkCount(),
             Piwik_SEO::REFERRER_DOMAINS_COUNT => $this->getReferrerDomainCount()
         );
         return $result;

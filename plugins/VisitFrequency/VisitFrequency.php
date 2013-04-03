@@ -44,7 +44,7 @@ class Piwik_VisitFrequency extends Piwik_Plugin
             'WidgetsList.add'                  => 'addWidgets',
             'Menu.add'                         => 'addMenu',
             'API.getReportMetadata'            => 'getReportMetadata',
-            'Archive.getPluginOfMetric'        => 'getPluginOfMetric',
+            'Archive.getPluginNameForMetric'   => 'getPluginNameForMetric',
         );
         return $hooks;
     }
@@ -52,7 +52,7 @@ class Piwik_VisitFrequency extends Piwik_Plugin
 	/**
 	 * Checks if a metric is calculated by the VisitFrequency plugin.
 	 */
-	public function getPluginOfMetric( $notification )
+	public function getPluginNameForMetric( $notification )
 	{
 		$pluginName =& $notification->getNotificationObject();
 		$metricName = $notification->getNotificationInfo();

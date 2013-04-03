@@ -179,8 +179,7 @@ class Piwik_Archive_Array_IndexedBySite extends Piwik_Archive_Array
 
             // collect archive ids for archives that have visits
             foreach ($this->archives as $archive) {
-                if (!$archive->isThereSomeVisits
-                    && $this->doNotQueryIfNoVisits) {
+                if (!$archive->shouldPerformQueries()) {
                     continue;
                 }
 

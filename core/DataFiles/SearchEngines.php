@@ -642,6 +642,9 @@ if (!isset($GLOBALS['Piwik_SearchEngines'])) {
         // El Mundo
         'ariadna.elmundo.es'             => array('El Mundo', 'q'),
 
+        // Majestic SEO
+        'www.majesticseo.com'            => array('Majestic SEO', 'q', 'reports/site-explorer/top-backlinks?q={k}'),
+
         // MySpace
         'searchservice.myspace.com'      => array('MySpace', 'qry', 'index.cfm?fuseaction=sitesearch.results&type=Web&qry={k}'),
 

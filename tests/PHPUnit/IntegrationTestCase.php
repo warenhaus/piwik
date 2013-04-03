@@ -145,6 +145,10 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
         // Usually these modules either return random changing data, or are already tested in specific unit tests.
         self::setApiNotToCall(self::$defaultApiNotToCall);
         self::setApiToCall(array());
+        
+        if (class_exists('Piwik_SEO')) {
+            Piwik_SEO::$customRankCheckerClassName = 'MockSEORankChecker';
+        }
     }
 
     public static function tearDownAfterClass()
@@ -183,6 +187,8 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
 
         // re-enable tag cloud shuffling
         Piwik_Visualization_Cloud::$debugDisableShuffle = true;
+        
+        Piwik_SEO::$customRankCheckerClassName = null;
     }
 
     public function setUp()

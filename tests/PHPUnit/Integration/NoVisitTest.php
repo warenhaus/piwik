@@ -27,6 +27,8 @@ class Test_Piwik_Integration_NoVisit extends IntegrationTestCase
 
     public function getApiForTesting()
     {
+        $seoApi = 'SEO.getSEOStats';
+        
         // this will output empty XML result sets as no visit was tracked
         return array(
             array('all', array('idSite' => self::$fixture->idSite,
@@ -36,6 +38,21 @@ class Test_Piwik_Integration_NoVisit extends IntegrationTestCase
                                'periods'      => array('day', 'week'),
                                'setDateLastN' => true,
                                'testSuffix'   => '_PeriodIsLast')),
+            
+            // seo metrics should still appear when there are no visits
+            array($seoApi, array('idSite'       => self::$fixture->idSite,
+                                 'date'         => self::$fixture->dateTime,
+                                 'periods'      => array('day', 'week'))),
+            array($seoApi, array('idSite'                 => self::$fixture->idSite,
+                                 'date'                   => self::$fixture->dateTime,
+                                 'periods'                => array('day', 'week'),
+                                 'testSuffix'             => '_full',
+                                 'otherRequestParameters' => array('full' => 1))),
+            
+            array('SEO.getSEOStatsForUrl', array('idSite'                 => self::$fixture->idSite,
+                                                 'date'                   => self::$fixture->dateTime,
+                                                 'periods'                => 'day',
+                                                 'otherRequestParameters' => array('url' => 'http://piwik.org'))),
         );
     }
 

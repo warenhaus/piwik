@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<result>
+	<label>SEO Stats</label>
+	<reportData>
+		<result date="2010-02-06">
+			<row>
+				<alexa_rank>12</alexa_rank>
+				<backlinks>42</backlinks>
+				<bing_indexed_pages>30</bing_indexed_pages>
+				<dmoz>18</dmoz>
+				<ggl_indexed_pages>24</ggl_indexed_pages>
+				<ggl_page_rank>6</ggl_page_rank>
+				<referrer_domains>48</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-07">
+			<row>
+				<alexa_rank>14</alexa_rank>
+				<backlinks>49</backlinks>
+				<bing_indexed_pages>35</bing_indexed_pages>
+				<dmoz>21</dmoz>
+				<ggl_indexed_pages>28</ggl_indexed_pages>
+				<ggl_page_rank>7</ggl_page_rank>
+				<referrer_domains>56</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-08">
+			<row>
+				<alexa_rank>16</alexa_rank>
+				<backlinks>56</backlinks>
+				<bing_indexed_pages>40</bing_indexed_pages>
+				<dmoz>24</dmoz>
+				<ggl_indexed_pages>32</ggl_indexed_pages>
+				<ggl_page_rank>8</ggl_page_rank>
+				<referrer_domains>64</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-09">
+			<row>
+				<alexa_rank>18</alexa_rank>
+				<backlinks>63</backlinks>
+				<bing_indexed_pages>45</bing_indexed_pages>
+				<dmoz>27</dmoz>
+				<ggl_indexed_pages>36</ggl_indexed_pages>
+				<ggl_page_rank>9</ggl_page_rank>
+				<referrer_domains>72</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-10">
+			<row>
+				<alexa_rank>20</alexa_rank>
+				<backlinks>70</backlinks>
+				<bing_indexed_pages>50</bing_indexed_pages>
+				<dmoz>30</dmoz>
+				<ggl_indexed_pages>40</ggl_indexed_pages>
+				<ggl_page_rank>10</ggl_page_rank>
+				<referrer_domains>80</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-11">
+			<row>
+				<alexa_rank>22</alexa_rank>
+				<backlinks>77</backlinks>
+				<bing_indexed_pages>55</bing_indexed_pages>
+				<dmoz>33</dmoz>
+				<ggl_indexed_pages>44</ggl_indexed_pages>
+				<ggl_page_rank>11</ggl_page_rank>
+				<referrer_domains>88</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-12">
+			<row>
+				<alexa_rank>24</alexa_rank>
+				<backlinks>84</backlinks>
+				<bing_indexed_pages>60</bing_indexed_pages>
+				<dmoz>36</dmoz>
+				<ggl_indexed_pages>48</ggl_indexed_pages>
+				<ggl_page_rank>12</ggl_page_rank>
+				<referrer_domains>96</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-13">
+			<row>
+				<alexa_rank>26</alexa_rank>
+				<backlinks>91</backlinks>
+				<bing_indexed_pages>65</bing_indexed_pages>
+				<dmoz>39</dmoz>
+				<ggl_indexed_pages>52</ggl_indexed_pages>
+				<ggl_page_rank>13</ggl_page_rank>
+				<referrer_domains>104</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-14">
+			<row>
+				<alexa_rank>28</alexa_rank>
+				<backlinks>98</backlinks>
+				<bing_indexed_pages>70</bing_indexed_pages>
+				<dmoz>42</dmoz>
+				<ggl_indexed_pages>56</ggl_indexed_pages>
+				<ggl_page_rank>14</ggl_page_rank>
+				<referrer_domains>112</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-15">
+			<row>
+				<alexa_rank>30</alexa_rank>
+				<backlinks>105</backlinks>
+				<bing_indexed_pages>75</bing_indexed_pages>
+				<dmoz>45</dmoz>
+				<ggl_indexed_pages>60</ggl_indexed_pages>
+				<ggl_page_rank>15</ggl_page_rank>
+				<referrer_domains>120</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-16">
+			<row>
+				<alexa_rank>32</alexa_rank>
+				<backlinks>112</backlinks>
+				<bing_indexed_pages>80</bing_indexed_pages>
+				<dmoz>48</dmoz>
+				<ggl_indexed_pages>64</ggl_indexed_pages>
+				<ggl_page_rank>16</ggl_page_rank>
+				<referrer_domains>128</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-17">
+			<row>
+				<alexa_rank>34</alexa_rank>
+				<backlinks>119</backlinks>
+				<bing_indexed_pages>85</bing_indexed_pages>
+				<dmoz>51</dmoz>
+				<ggl_indexed_pages>68</ggl_indexed_pages>
+				<ggl_page_rank>17</ggl_page_rank>
+				<referrer_domains>136</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-18">
+			<row>
+				<alexa_rank>36</alexa_rank>
+				<backlinks>126</backlinks>
+				<bing_indexed_pages>90</bing_indexed_pages>
+				<dmoz>54</dmoz>
+				<ggl_indexed_pages>72</ggl_indexed_pages>
+				<ggl_page_rank>18</ggl_page_rank>
+				<referrer_domains>144</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-19">
+			<row>
+				<alexa_rank>38</alexa_rank>
+				<backlinks>133</backlinks>
+				<bing_indexed_pages>95</bing_indexed_pages>
+				<dmoz>57</dmoz>
+				<ggl_indexed_pages>76</ggl_indexed_pages>
+				<ggl_page_rank>19</ggl_page_rank>
+				<referrer_domains>152</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-20">
+			<row>
+				<alexa_rank>40</alexa_rank>
+				<backlinks>140</backlinks>
+				<bing_indexed_pages>100</bing_indexed_pages>
+				<dmoz>60</dmoz>
+				<ggl_indexed_pages>80</ggl_indexed_pages>
+				<ggl_page_rank>20</ggl_page_rank>
+				<referrer_domains>160</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-21">
+			<row>
+				<alexa_rank>42</alexa_rank>
+				<backlinks>147</backlinks>
+				<bing_indexed_pages>105</bing_indexed_pages>
+				<dmoz>63</dmoz>
+				<ggl_indexed_pages>84</ggl_indexed_pages>
+				<ggl_page_rank>21</ggl_page_rank>
+				<referrer_domains>168</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-22">
+			<row>
+				<alexa_rank>44</alexa_rank>
+				<backlinks>154</backlinks>
+				<bing_indexed_pages>110</bing_indexed_pages>
+				<dmoz>66</dmoz>
+				<ggl_indexed_pages>88</ggl_indexed_pages>
+				<ggl_page_rank>22</ggl_page_rank>
+				<referrer_domains>176</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-23">
+			<row>
+				<alexa_rank>46</alexa_rank>
+				<backlinks>161</backlinks>
+				<bing_indexed_pages>115</bing_indexed_pages>
+				<dmoz>69</dmoz>
+				<ggl_indexed_pages>92</ggl_indexed_pages>
+				<ggl_page_rank>23</ggl_page_rank>
+				<referrer_domains>184</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-24">
+			<row>
+				<alexa_rank>48</alexa_rank>
+				<backlinks>168</backlinks>
+				<bing_indexed_pages>120</bing_indexed_pages>
+				<dmoz>72</dmoz>
+				<ggl_indexed_pages>96</ggl_indexed_pages>
+				<ggl_page_rank>24</ggl_page_rank>
+				<referrer_domains>192</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-25">
+			<row>
+				<alexa_rank>50</alexa_rank>
+				<backlinks>175</backlinks>
+				<bing_indexed_pages>125</bing_indexed_pages>
+				<dmoz>75</dmoz>
+				<ggl_indexed_pages>100</ggl_indexed_pages>
+				<ggl_page_rank>25</ggl_page_rank>
+				<referrer_domains>200</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-26">
+			<row>
+				<alexa_rank>52</alexa_rank>
+				<backlinks>182</backlinks>
+				<bing_indexed_pages>130</bing_indexed_pages>
+				<dmoz>78</dmoz>
+				<ggl_indexed_pages>104</ggl_indexed_pages>
+				<ggl_page_rank>26</ggl_page_rank>
+				<referrer_domains>208</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-27">
+			<row>
+				<alexa_rank>54</alexa_rank>
+				<backlinks>189</backlinks>
+				<bing_indexed_pages>135</bing_indexed_pages>
+				<dmoz>81</dmoz>
+				<ggl_indexed_pages>108</ggl_indexed_pages>
+				<ggl_page_rank>27</ggl_page_rank>
+				<referrer_domains>216</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-02-28">
+			<row>
+				<alexa_rank>56</alexa_rank>
+				<backlinks>196</backlinks>
+				<bing_indexed_pages>140</bing_indexed_pages>
+				<dmoz>84</dmoz>
+				<ggl_indexed_pages>112</ggl_indexed_pages>
+				<ggl_page_rank>28</ggl_page_rank>
+				<referrer_domains>224</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-03-01">
+			<row>
+				<alexa_rank>2</alexa_rank>
+				<backlinks>7</backlinks>
+				<bing_indexed_pages>5</bing_indexed_pages>
+				<dmoz>3</dmoz>
+				<ggl_indexed_pages>4</ggl_indexed_pages>
+				<ggl_page_rank>1</ggl_page_rank>
+				<referrer_domains>8</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-03-02">
+			<row>
+				<alexa_rank>4</alexa_rank>
+				<backlinks>14</backlinks>
+				<bing_indexed_pages>10</bing_indexed_pages>
+				<dmoz>6</dmoz>
+				<ggl_indexed_pages>8</ggl_indexed_pages>
+				<ggl_page_rank>2</ggl_page_rank>
+				<referrer_domains>16</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-03-03">
+			<row>
+				<alexa_rank>6</alexa_rank>
+				<backlinks>21</backlinks>
+				<bing_indexed_pages>15</bing_indexed_pages>
+				<dmoz>9</dmoz>
+				<ggl_indexed_pages>12</ggl_indexed_pages>
+				<ggl_page_rank>3</ggl_page_rank>
+				<referrer_domains>24</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-03-04">
+			<row>
+				<alexa_rank>8</alexa_rank>
+				<backlinks>28</backlinks>
+				<bing_indexed_pages>20</bing_indexed_pages>
+				<dmoz>12</dmoz>
+				<ggl_indexed_pages>16</ggl_indexed_pages>
+				<ggl_page_rank>4</ggl_page_rank>
+				<referrer_domains>32</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-03-05">
+			<row>
+				<alexa_rank>10</alexa_rank>
+				<backlinks>35</backlinks>
+				<bing_indexed_pages>25</bing_indexed_pages>
+				<dmoz>15</dmoz>
+				<ggl_indexed_pages>20</ggl_indexed_pages>
+				<ggl_page_rank>5</ggl_page_rank>
+				<referrer_domains>40</referrer_domains>
+			</row>
+		</result>
+		<result date="2010-03-06">
+			<row>
+				<alexa_rank>12</alexa_rank>
+				<backlinks>42</backlinks>
+				<bing_indexed_pages>30</bing_indexed_pages>
+				<dmoz>18</dmoz>
+				<ggl_indexed_pages>24</ggl_indexed_pages>
+				<ggl_page_rank>6</ggl_page_rank>
+				<referrer_domains>48</referrer_domains>
+			</row>
+		</result>
+	</reportData>
+	<metadata>
+		<metrics>
+			<ggl_page_rank>
+				<name>Google PageRank</name>
+				<min>1</min>
+				<max>28</max>
+				<change>0%</change>
+			</ggl_page_rank>
+			<ggl_indexed_pages>
+				<name>Google indexed pages</name>
+				<min>4</min>
+				<max>112</max>
+				<change>0%</change>
+			</ggl_indexed_pages>
+			<alexa_rank>
+				<name>Alexa Rank</name>
+				<min>2</min>
+				<max>56</max>
+				<change>0%</change>
+			</alexa_rank>
+			<dmoz>
+				<name>DMOZ entries</name>
+				<min>3</min>
+				<max>84</max>
+				<change>0%</change>
+			</dmoz>
+			<bing_indexed_pages>
+				<name>Bing indexed pages</name>
+				<min>5</min>
+				<max>140</max>
+				<change>0%</change>
+			</bing_indexed_pages>
+			<backlinks>
+				<name>External Backlinks (Majestic)</name>
+				<min>7</min>
+				<max>196</max>
+				<change>0%</change>
+			</backlinks>
+			<referrer_domains>
+				<name>Referrer Domains (Majestic)</name>
+				<min>8</min>
+				<max>224</max>
+				<change>0%</change>
+			</referrer_domains>
+		</metrics>
+		<dimension>Value</dimension>
+	</metadata>
+</result>

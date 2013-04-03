@@ -1071,19 +1071,19 @@ abstract class Piwik_ArchiveProcessing
      */
     public function makeArchiveQuery($idSite = false, $period = false, $date = false, $segment = false)
     {
-        if ($idSite === false) {
+        if (empty($idSite)) {
             $idSite = $this->site->getId();
         }
         
-        if ($period === false) {
+        if (empty($period)) {
             $period = $this->period->getLabel();
         }
         
-        if ($date === false) {
+        if (empty($date)) {
             $date = $this->period->getDateStart()->toString();
         }
         
-        if ($segment === false) {
+        if (empty($segment)) {
             $segment = $this->segment;
         }
         
@@ -1096,7 +1096,7 @@ abstract class Piwik_ArchiveProcessing
      * Makes sure new archive entries are not created, even if the latest
      * archive is too old.
      */
-    public function disableArchiving()
+    public function useOldArchiveIfPresent()
     {
         $this->checkIfArchiveIsTooOld = false;
     }

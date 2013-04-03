@@ -152,7 +152,22 @@ class Test_Piwik_Integration_RowEvolution extends IntegrationTestCase
                 'apiAction' => 'getBrowser',
                 'label'     => 'Firefox,Chrome,Opera'
             )
-
+        ));
+        
+        // test SEO reports in row evolution
+        $return[] = array('API.getRowEvolution', array(
+            'testSuffix'             => '_seoEvolution',
+            'periods'                => 'day',
+            'idSite'                 => $idSite,
+            'date'                   => $today,
+            'otherRequestParameters' => array(
+                'date'                                     => '2010-02-06,2010-03-06',
+                'period'                                   => 'day',
+                'apiModule'                                => 'SEO',
+                'apiAction'                                => 'getSEOStats',
+                'label'                                    => 'SEO Stats',
+                'filter_add_columns_when_show_all_columns' => '0'
+            )
         ));
 
         return $return;

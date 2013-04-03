@@ -586,7 +586,8 @@ class Piwik_DataTable
         ) {
             $label = $row->getColumn('label');
             if ($label !== false) {
-                $this->rowsIndexByLabel[$label] = count($this->rows) - 1;
+                end($this->rows);
+                $this->rowsIndexByLabel[$label] = key($this->rows);
             }
             $this->indexNotUpToDate = false;
         }

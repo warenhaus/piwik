@@ -157,4 +157,15 @@ abstract class Piwik_Archive_Array extends Piwik_Archive
             $archive->disableArchiving();
         }
     }
+
+    /**
+     * TODO
+     */
+    public function performQueryWhenNoVisits()
+    {
+        parent::performQueryWhenNoVisits();
+        foreach ($this->archives as $archive) {
+            $archive->performQueryWhenNoVisits();
+        }
+    }
 }

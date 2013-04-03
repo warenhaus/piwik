@@ -69,9 +69,7 @@ class Piwik_Archive_Array_IndexedByDate extends Piwik_Archive_Array
         foreach ($this->archives as $archive) {
             $archive->setRequestedReport(is_string($fields) ? $fields : current($fields));
             $archive->prepareArchive();
-            if (!$archive->isThereSomeVisits
-                && $this->doNotQueryIfNoVisits
-            ) {
+            if (!$archive->shouldPerformQueries()) {
                 continue;
             }
 

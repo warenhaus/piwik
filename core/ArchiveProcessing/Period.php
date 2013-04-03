@@ -250,10 +250,12 @@ class Piwik_ArchiveProcessing_Period extends Piwik_ArchiveProcessing
      */
     protected function compute()
     {
-        if (!$this->isThereSomeVisits()) {
-            return;
+        if ($this->isThereSomeVisits()) {
+            Piwik_PostEvent('ArchiveProcessing_Period.compute', $this);
         }
-        Piwik_PostEvent('ArchiveProcessing_Period.compute', $this);
+        // FIXME: hack to make sure SEO metrics get archived. Would not be necessary if there was metric
+        // metadata, as the isThereSomeVisits optimization above is not applicable to SEO metrics.
+        Piwik_PostEvent('ArchiveProcessing_Period.computeNoVisits', $this);
     }
 
     protected function loadSubPeriods()

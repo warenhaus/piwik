@@ -1,0 +1,679 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<results>
+	<result idSite="1">
+		<result date="From 2009-12-28 to 2010-01-03">
+			<row>
+				<label>Alexa Rank</label>
+				<value>6</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>21</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>15</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>9</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>12</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>3</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>24</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-01-04 to 2010-01-10">
+			<row>
+				<label>Alexa Rank</label>
+				<value>20</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>70</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>50</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>30</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>40</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>10</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>80</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-01-11 to 2010-01-17">
+			<row>
+				<label>Alexa Rank</label>
+				<value>34</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>119</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>85</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>51</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>68</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>17</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>136</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-01-18 to 2010-01-24">
+			<row>
+				<label>Alexa Rank</label>
+				<value>48</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>168</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>120</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>72</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>96</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>24</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>192</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-01-25 to 2010-01-31">
+			<row>
+				<label>Alexa Rank</label>
+				<value>62</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>217</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>155</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>93</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>124</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>31</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>248</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-02-01 to 2010-02-07">
+			<row>
+				<label>Alexa Rank</label>
+				<value>14</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>49</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>35</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>21</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>28</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>7</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>56</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-02-08 to 2010-02-14">
+			<row>
+				<label>Alexa Rank</label>
+				<value>28</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>98</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>70</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>42</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>56</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>14</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>112</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+	</result>
+	<result idSite="2">
+		<result date="From 2009-12-28 to 2010-01-03">
+			<row>
+				<label>Alexa Rank</label>
+				<value>6</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>21</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>15</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>9</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>12</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>3</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>24</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-01-04 to 2010-01-10">
+			<row>
+				<label>Alexa Rank</label>
+				<value>20</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>70</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>50</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>30</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>40</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>10</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>80</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-01-11 to 2010-01-17">
+			<row>
+				<label>Alexa Rank</label>
+				<value>34</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>119</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>85</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>51</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>68</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>17</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>136</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-01-18 to 2010-01-24">
+			<row>
+				<label>Alexa Rank</label>
+				<value>48</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>168</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>120</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>72</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>96</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>24</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>192</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-01-25 to 2010-01-31">
+			<row>
+				<label>Alexa Rank</label>
+				<value>62</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>217</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>155</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>93</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>124</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>31</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>248</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-02-01 to 2010-02-07">
+			<row>
+				<label>Alexa Rank</label>
+				<value>14</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>49</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>35</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>21</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>28</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>7</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>56</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+		<result date="From 2010-02-08 to 2010-02-14">
+			<row>
+				<label>Alexa Rank</label>
+				<value>28</value>
+				<logo>plugins/Referers/images/searchEngines/alexa.com.png</logo>
+				<id>alexa</id>
+			</row>
+			<row>
+				<label>External Backlinks (Majestic)</label>
+				<value>98</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>external-backlinks</id>
+			</row>
+			<row>
+				<label>Bing indexed pages</label>
+				<value>70</value>
+				<logo>plugins/Referers/images/searchEngines/bing.com.png</logo>
+				<id>bing-index</id>
+			</row>
+			<row>
+				<label>DMOZ entries</label>
+				<value>42</value>
+				<logo>plugins/Referers/images/searchEngines/dmoz.org.png</logo>
+				<id>dmoz</id>
+			</row>
+			<row>
+				<label>Google indexed pages</label>
+				<value>56</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>google-index</id>
+			</row>
+			<row>
+				<label>Google PageRank</label>
+				<value>14</value>
+				<logo>plugins/Referers/images/searchEngines/google.com.png</logo>
+				<id>pagerank</id>
+			</row>
+			<row>
+				<label>Referrer Domains (Majestic)</label>
+				<value>112</value>
+				<logo>plugins/SEO/images/majesticseo.png</logo>
+				<url>http://www.majesticseo.com/reports/site-explorer/summary/?IndexDataSource=F&amp;pk_campaign=piwik</url>
+				<url_tooltip>View External Backlinks report on MajesticSEO.com</url_tooltip>
+				<id>referrer-domains</id>
+			</row>
+		</result>
+	</result>
+</results>
