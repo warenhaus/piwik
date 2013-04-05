@@ -780,6 +780,27 @@ class DataTableTest extends PHPUnit_Framework_TestCase
 
         destroy($rowBeingDestructed);
     }
+    
+    /**
+     * @group Core
+     * @group DataTable
+     */
+    public function testAddRowUpdatesLabelIndexAfterDeleteRow()
+    {
+        $dataTable = new Piwik_DataTable();
+        $dataTable->addRowsFromSimpleArray(array(
+            array('label' => 'label1', 'value' => 1),
+            array('label' => 'label2', 'value' => 2),
+            array('label' => 'label3', 'value' => 3),
+        ));
+        
+        $dataTable->deleteRow($dataTable->getRowIdFromLabel('label2'));
+        $dataTable->addRowsFromSimpleArray(array(
+            array('label' => 'label4', 'value' => 4)
+        ));
+        
+        $this->assertEquals(3, $dataTable->getRowIdFromLabel('label4'));
+    }
 
     protected function _getDataTable1ForTest()
     {

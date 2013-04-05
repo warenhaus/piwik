@@ -35,6 +35,14 @@ class Piwik_SEO_Controller extends Piwik_Controller
         echo $view->render();
     }
     
+    /**
+     * @deprecated
+     */
+    public function getRank()
+    {
+        $this->getSEOStatsForSite();
+    }
+    
     public function getSEOStatsForUrl()
     {
         $url = urldecode(Piwik_Common::getRequestVar('url', $default = null, 'string'));

@@ -14,6 +14,16 @@
 class Test_Piwik_Integration_NoVisit extends IntegrationTestCase
 {
     public static $fixture = null; // initialized below class definition
+    
+    public static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+        
+        $date = Piwik_Date::factory(self::$fixture->dateTime);
+        for ($i = 0; $i != 7; ++$i) {
+            Piwik_PluginsManager::getInstance()->getLoadedPlugin('SEO')->archiveSEOMetrics($date->addDay($i));
+        }
+    }
 
     /**
      * @dataProvider getApiForTesting

@@ -531,7 +531,14 @@ abstract class Piwik_ArchiveProcessing
     public static function getDoneStringFlagFor($segment, $period, $requestedReport, $flagArchiveAsAllPlugins = false)
     {
         $segmentHash = $segment->getHash();
-        if (!self::shouldProcessReportsAllPluginsFor($segment, $period)) {
+        $createNewArchiveForThisPlugin = !self::shouldProcessReportsAllPluginsFor($segment, $period);
+
+        if ($requestedReport == 'SEO_Metrics') {
+            // A new idarchive will be allocated specifically for SEO Metrics report
+            $createNewArchiveForThisPlugin = true;
+        }
+
+        if ($createNewArchiveForThisPlugin) {
             $pluginProcessed = self::getPluginBeingProcessed($requestedReport);
             if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($pluginProcessed)
                 || $flagArchiveAsAllPlugins

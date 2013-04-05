@@ -15,8 +15,8 @@
 class Piwik_SEO extends Piwik_Plugin
 {
     /** Archive names for SEO metrics. */
-    const GOOGLE_PAGE_RANK_METRIC_NAME = 'ggl_page_rank';
-    const GOOGLE_INDEXED_PAGE_COUNT = 'ggl_indexed_pages';
+    const GOOGLE_PAGE_RANK_METRIC_NAME = 'google_page_rank';
+    const GOOGLE_INDEXED_PAGE_COUNT = 'google_indexed_pages';
     const ALEXA_RANK_METRIC_NAME = 'alexa_rank';
     const DMOZ_METRIC_NAME = 'dmoz';
     const BING_INDEXED_PAGE_COUNT = 'bing_indexed_pages';
@@ -78,10 +78,20 @@ class Piwik_SEO extends Piwik_Plugin
             'WidgetsList.add'                          => 'addWidgets',
             'Archive.getPluginNameForMetric'           => 'getPluginNameForMetric',
             'API.getReportMetadata'                    => 'getReportMetadata',
-            'ArchiveProcessing_Day.computeNoVisits'    => 'archiveDay',
+            'TaskScheduler.getScheduledTasks'          => 'getScheduledTasks',
             'ArchiveProcessing_Period.computeNoVisits' => 'archivePeriod',
         );
         return $hooks;
+    }
+    
+    public function getScheduledTasks($notification)
+    {
+        $tasks = &$notification->getNotificationObject();
+        
+        $archiveSEOMetricsTask = new Piwik_ScheduledTask(
+            $this, 'archiveSEOMetrics', null, new Piwik_ScheduledTime_Daily(), Piwik_ScheduledTask::HIGH_PRIORITY
+        );
+        $tasks[] = $archiveSEOMetricsTask;
     }
 
     public function getReportMetadata($notification)
@@ -125,63 +135,43 @@ class Piwik_SEO extends Piwik_Plugin
     }
     
     /**
-     * Archives SEO metrics for today. If the date requested for archiving is not
-     * today, nothing is done. Also only archives metrics for the first N sites
+     * Archives SEO metrics for today. Also only archives metrics for the first N sites
      * (determined by the seo_max_sites_to_archive_metrics_for config option).
      * 
      * If stats for today have already been requested, we do not do it again.
      * Instead, we request the last stats and re-insert them w/ a new idarchive.
      * 
-     * TODO: in order to not use too many majestic API requests, we can issue
-     *       up to 100 sites at once in a request, but the archiving process is
-     *       not built for archiving multiple sites at once.
-     * 
      * @param Piwik_Event_Notification $notification
      */
-    public function archiveDay( $notification )
+    public function archiveSEOMetrics( $date = false )
     {
-        $archiveProcessing = $notification->getNotificationObject();
-        
-        $site = $archiveProcessing->site;
-        $date = $archiveProcessing->period->getDateStart();
-        if (!$archiveProcessing->shouldProcessReportsForPlugin($this->getPluginName())
-            || !$this->shouldArchiveForSite($site->getId())
-            || !$this->shouldArchiveForDate($date, $site->getTimezone())
+        // when testing, make sure we can archive for any date
+        if (self::$customRankCheckerClassName === null
+            || $date === false
         ) {
-            return;
+            $date = Piwik_Date::factory('today');
         }
         
-        $archive = $this->makeArchiveQuery($archiveProcessing);
-        if ($archive === null) {
-            return;
-        }
-        
-        // check if seo archiving has been completed successfully
-        $isSEOArchivingDone = $archive->getNumeric(self::DONE_ARCHIVE_NAME);
-        
-        // if archiving has not been completed successfully, issue HTTP requests
-        // otherwise, use archived statistics
-        if ($isSEOArchivingDone) {
-            $dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics);
-            $stats = $this->getColumnsOfFirstRow($dataTable);
-        } else {
-            $siteUrl = $archive->getSite()->getMainUrl();
-        
+        $idSitesToArchiveFor = $this->getSitesToArchiveSEOMetricsFor();
+        foreach ($idSitesToArchiveFor as $idSite) {
+            $site = new Piwik_Site($idSite);
+            $siteUrl = $site->getMainUrl();
+            
             $rankChecker = self::makeRankChecker($siteUrl, $date);
             $stats = $rankChecker->getAllStats();
-        }
-        
-        // insert statistics w/ new idarchive
-        foreach ($stats as $name => $value) {
-            $archiveProcessing->insertNumericRecord($name, $value);
-        }
-        
-        // finished SEO archiving (unless the Majestic API returned nothing)
-        if (isset($stats[self::BACKLINK_COUNT])
-            && $stats[self::BACKLINK_COUNT] !== false
-            && isset($stats[self::REFERRER_DOMAINS_COUNT])
-            && $stats[self::REFERRER_DOMAINS_COUNT] !== false
-        ) {
+            
+            $archiveProcessing = Piwik_ArchiveProcessing::factory('day');
+            $archiveProcessing->setSite($site);
+            $archiveProcessing->setPeriod(Piwik_Period::factory('day', $date));
+            $archiveProcessing->setSegment(new Piwik_Segment(false, array($idSite)));
+            $archiveProcessing->init();
+            $archiveProcessing->setRequestedReport('SEO_Metrics');
+            $archiveProcessing->loadArchive();
+            
+            // insert statistics w/ new idarchive
+            foreach ($stats as $name => $value) {echo "NAME: $name\nVALUE: $value\n";
+                $archiveProcessing->insertNumericRecord($name, $value);
+            }
             $archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
         }
     }
@@ -247,17 +237,24 @@ class Piwik_SEO extends Piwik_Plugin
     private function shouldArchiveForSite($idSite)
     {
         // if the browser initiated archiving, then we always archive
-        if (!Piwik_TaskScheduler::isTaskBeingExecuted()) {
+        if (!Piwik_Common::isPhpCliMode()) {
             return true;
         }
         
+        $idSitesToArchiveFor = $this->getSitesToArchiveSEOMetricsFor();
+        return in_array($idSite, $idSitesToArchiveFor);
+    }
+    
+    /**
+     * TODO
+     */
+    private function getSitesToArchiveSEOMetricsFor()
+    {
         $seoMaxSitesToArchiveMetricsFor =
             Piwik_Config::getInstance()->General['seo_max_sites_to_archive_metrics_for'];
         
-        $allIdSites = Piwik_SitesManager_API::getAllSitesId();
-        $idSitesToArchiveFor = array_slice($allIdSites, 0, $seoMaxSitesToArchiveMetricsFor);
-        
-        return in_array($idSite, $idSitesToArchiveFor);
+        $allIdSites = Piwik_SitesManager_API::getInstance()->getAllSitesId();
+        return array_slice($allIdSites, 0, $seoMaxSitesToArchiveMetricsFor);
     }
     
     /**
@@ -271,8 +268,11 @@ class Piwik_SEO extends Piwik_Plugin
      */
     private function shouldArchiveForDate($date, $siteTimezone)
     {
-        $today = Piwik_Date::factory('now', $siteTimezone)->toString();
-        return $date->toString() == $today || self::$customRankCheckerClassName !== null;
+        $today = Piwik_Date::factory('now', $siteTimezone);
+        $yesterday = $today->subHour(24);
+        return $date->toString() == $today->toString()
+             || $date->toString() == $yesterday->toString()
+             || self::$customRankCheckerClassName !== null;
     }
     
     /**
