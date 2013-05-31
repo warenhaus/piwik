@@ -23,10 +23,11 @@
                 {foreach from=$ranks item=rank}
                 {if !($rank.id=='dmoz' && $rank.value==0)}{* do not display dmoz metric if value == 0 *}
                 <tr>
-                    {capture assign=seoLink}<a class="linkContent" href="?module=Proxy&action=redirect&url={$rank.logo_link|urlencode}" target="_blank" {if !empty($rank.logo_tooltip)}title="{$rank.logo_tooltip}"{/if}>{/capture}
+                    {capture assign=seoLink}{if !empty($rank.logo_link)}<a class="linkContent" href="?module=Proxy&action=redirect&url={$rank.logo_link|urlencode}" target="_blank" {if !empty($rank.logo_tooltip)}title="{$rank.logo_tooltip}"{/if}>{/if}{/capture}
                     {capture assign=majesticLink}{$seoLink}Majestic</a>{/capture}
-                    <td>{if !empty($rank.logo_link)}<a href="{$rank.logo_link}" target="_blank" {if !empty($rank.logo_tooltip)}title="{$rank.logo_tooltip}"{/if}>{/if}{if isset($rank.logo)}<img style='vertical-align:middle;margin-right:6px;' src='{$rank.logo}' border='0' alt="{$rank.label}">{/if}{if !empty($rank.logo_link)}</a>{/if} {$rank.label}
-                    </td><td>
+                    <td>{if !empty($rank.logo_link)}{$seoLink}{/if}<img style='vertical-align:middle;margin-right:6px;' src='{$rank.logo}' border='0' alt="{$rank.label}">{if !empty($rank.logo_link)}</a>{/if} {$rank.label|replace:"Majestic":$majesticLink}
+                    </td>
+                    <td>
                         <div style='margin-left:15px'>
                             {if !empty($rank.logo_link)}{$seoLink}{/if}
                                 {if isset($rank.value)}{$rank.value}{else}-{/if}
@@ -39,7 +40,6 @@
                 </tr>
                 {/if}
                 {/foreach}
-                   
                 </table>
             {/if}
         </div>

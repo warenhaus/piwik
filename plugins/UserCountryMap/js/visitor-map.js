@@ -1077,7 +1077,7 @@
                             country.fips = UserCountryMap.differentFIPS[country.iso2];
                         }
                         $.each(metrics, function (i, metric) {
-                            metric = $(metric).attr('value');
+                            metric = $(metric).val();
                             country[metric] = data[metric];
                         });
                         countryData.push(country);
@@ -1167,7 +1167,7 @@
         resize: function () {
             var ratio, w, h,
                 map = this.map,
-                maxHeight = $(window).height() - (this.theWidget && this.theWidget.isMaximised ? 150 : 55);
+                maxHeight = $(window).height() - (this.theWidget && this.theWidget.isMaximised ? 150 : 79);
             ratio = map.viewAB.width / map.viewAB.height;
             w = map.container.width();
             h = w / ratio;

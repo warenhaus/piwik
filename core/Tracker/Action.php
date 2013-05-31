@@ -80,7 +80,7 @@ class Piwik_Tracker_Action implements Piwik_Tracker_Action_Interface
      */
     private $pageEncoding = false;
 
-    static private $queryParametersToExclude = array('phpsessid', 'jsessionid', 'sessionid', 'aspsessionid', 'fb_xd_fragment', 'fb_comment_id', 'doing_wp_cron');
+    static private $queryParametersToExclude = array('phpsessid', 'jsessionid', 'sessionid', 'aspsessionid', 'fb_xd_fragment', 'fb_comment_id', 'doing_wp_cron', 'gclid');
 
     /* Custom Variable names & slots used for Site Search metadata (category, results count) */
     const CVAR_KEY_SEARCH_CATEGORY = '_pk_scat';
@@ -95,7 +95,7 @@ class Piwik_Tracker_Action implements Piwik_Tracker_Action_Interface
 
     /* Custom Variables names & slots plus Tracking API Parameters for performance analytics */
     const DB_COLUMN_TIME_GENERATION = 'custom_float';
-    const PARAMETER_NAME_TIME_GENERATION = 'generation_time_ms';
+    const PARAMETER_NAME_TIME_GENERATION = 'gt_ms';
 
     /**
      * Map URL prefixes to integers.
@@ -707,7 +707,7 @@ class Piwik_Tracker_Action implements Piwik_Tracker_Action_Interface
         );
 
         if (!empty($this->timeGeneration)) {
-            $insert[self::DB_COLUMN_TIME_GENERATION] = (int)$this->timeGeneration;
+            $insert[self::DB_COLUMN_TIME_GENERATION] = $this->timeGeneration;
         }
 
         $customVariables = $this->getCustomVariables();
@@ -1019,11 +1019,13 @@ class Piwik_Tracker_Action implements Piwik_Tracker_Action_Interface
         return array($url, $actionName, $categoryName, $count);
     }
 
+    const GENERATION_TIME_MS_MAXIMUM = 3600000; // 1 hour
     protected function detectPerformanceAnalyticsParameters()
     {
         $generationTime = Piwik_Common::getRequestVar(self::PARAMETER_NAME_TIME_GENERATION, -1, 'int', $this->request);
-        if ($generationTime > 0) {
-            $this->timeGeneration = $generationTime;
+        if ($generationTime > 0
+            && $generationTime < self::GENERATION_TIME_MS_MAXIMUM) {
+            $this->timeGeneration = (int)$generationTime;
         }
     }
 

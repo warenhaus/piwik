@@ -12,30 +12,30 @@
 ;--------
 
 [database]
-host			=
-username		=
-password		=
-dbname			=
-tables_prefix	=
-port			= 3306
-adapter			= PDO_MYSQL
+host =
+username =
+password =
+dbname =
+tables_prefix =
+port = 3306
+adapter = PDO_MYSQL
 ; if charset is set to utf8, Piwik will ensure that it is storing its data using UTF8 charset.
 ; it will add a sql query SET at each page view.
 ; Piwik should work correctly without this setting.
-;charset		= utf8
+;charset = utf8
 
 [database_tests]
-host 			= localhost
-username 		= root
-password 		=
-dbname			= piwik_tests
-tables_prefix	= piwiktests_
-port			= 3306
-adapter 		= PDO_MYSQL
+host = localhost
+username = root
+password =
+dbname = piwik_tests
+tables_prefix = piwiktests_
+port = 3306
+adapter = PDO_MYSQL
 
 [superuser]
-login			= 
-password		=
+login = 
+password =
 
 [Debug]
 ; if set to 1, the archiving process will always be triggered, even if the archive has already been computed
@@ -47,7 +47,7 @@ always_archive_data_range = 0;
 
 ; if set to 1, all the SQL queries will be recorded by the profiler
 ; and a profiling summary will be printed at the end of the request
-; NOTE: you must also set  [log] logger_message[] = "screen" to enable the profiler to print on screen
+; NOTE: you must also set [log] logger_message[] = "screen" to enable the profiler to print on screen
 enable_sql_profiler = 0
 
 ; if set to 1, a Piwik tracking code will be included in the Piwik UI footer and will track visits, pages, etc. to idsite = 1
@@ -237,7 +237,7 @@ datatable_archiving_maximum_rows_subtable_referers = 50
 datatable_archiving_maximum_rows_actions = 500
 ; maximum number of rows for pages in categories (sub pages, when clicking on the + for a page category)
 ; note: should not exceed the display limit in Piwik_Actions_Controller::ACTIONS_REPORT_ROWS_DISPLAY
-;       because each subdirectory doesn't have paging at the bottom, so all data should be displayed if possible.
+; because each subdirectory doesn't have paging at the bottom, so all data should be displayed if possible.
 datatable_archiving_maximum_rows_subtable_actions = 100
 
 ; maximum number of rows for other tables (Providers, User settings configurations)
@@ -345,13 +345,20 @@ seo_max_sites_to_archive_metrics_for = 50
 ; this is useful when you want to do cross websites analysis
 use_third_party_id_cookie = 0
 
+; There is a feature in the Tracking API that lets you create new visit at any given time, for example if you know that a different user/customer is using
+; the app then you would want to tell Piwik to create a new visit (even though both users are using the same browser/computer).
+; To prevent abuse and easy creation of fake visits, this feature requires admin token_auth by default
+; If you wish to use this feature using the Javascript tracker, you can set the setting new_visit_api_requires_admin=0, and in Javascript write:
+; _paq.push(['appendToTrackingUrl', 'new_visit=1']);
+new_visit_api_requires_admin = 1
+
 ; This setting should only be set to 1 in an intranet setting, where most users have the same configuration (browsers, OS)
 ; and the same IP. If left to 0 in this setting, all visitors will be counted as one single visitor.
 trust_visitors_cookies = 0
 
 ; name of the cookie used to store the visitor information
 ; This is used only if use_third_party_id_cookie = 1
-cookie_name	= _pk_uid
+cookie_name = _pk_uid
 
 ; by default, the Piwik tracking cookie expires in 2 years
 ; This is used only if use_third_party_id_cookie = 1
@@ -363,11 +370,11 @@ cookie_expire = 63072000
 cookie_path =
 
 ; set to 0 if you want to stop tracking the visitors. Useful if you need to stop all the connections on the DB.
-record_statistics			= 1
+record_statistics = 1
 
 ; length of a visit in seconds. If a visitor comes back on the website visit_standard_length seconds
 ; after his last page view, it will be recorded as a new visit
-visit_standard_length       = 1800
+visit_standard_length = 1800
 
 ; The window to look back for a previous visit by this current visitor. Defaults to visit_standard_length.
 ; If you are looking for higher accuracy of "returning visitors" metrics, you may set this value to 86400 or more.
@@ -396,13 +403,13 @@ ignore_visits_cookie_name = piwik_ignore
 ; Comma separated list of variable names that will be read to define a Campaign name, for example CPC campaign
 ; Example: If a visitor first visits 'index.php?piwik_campaign=Adwords-CPC' then it will be counted as a campaign referer named 'Adwords-CPC'
 ; Includes by default the GA style campaign parameters
-campaign_var_name			= "pk_campaign,piwik_campaign,utm_campaign,utm_source,utm_medium"
+campaign_var_name = "pk_campaign,piwik_campaign,utm_campaign,utm_source,utm_medium"
 
 ; Comma separated list of variable names that will be read to track a Campaign Keyword
 ; Example: If a visitor first visits 'index.php?piwik_campaign=Adwords-CPC&piwik_kwd=My killer keyword' ;
 ; then it will be counted as a campaign referer named 'Adwords-CPC' with the keyword 'My killer keyword'
 ; Includes by default the GA style campaign keyword parameter utm_term
-campaign_keyword_var_name	= "pk_kwd,piwik_kwd,utm_term"
+campaign_keyword_var_name = "pk_kwd,piwik_kwd,utm_term"
 
 ; maximum length of a Page Title or a Page URL recorded in the log_action.name table
 page_maximum_length = 1024;
@@ -422,7 +429,7 @@ ip_address_mask_length = 1
 tracker_cache_file_ttl = 300
 
 ; DO NOT USE THIS SETTING ON PUBLICLY AVAILABLE PIWIK SERVER
-; !!! Security risk: if set to 0, it would allow anyone to push data to Piwik with custom dates in the past/future and with fake IPs !!!
+; !!! Security risk: if set to 0, it would allow anyone to push data to Piwik with custom dates in the past/future and even with fake IPs!
 ; When using the Tracking API, to override either the datetime and/or the visitor IP, 
 ; token_auth with an "admin" access is required. If you set this setting to 0, the token_auth will not be required anymore.
 ; DO NOT USE THIS SETTING ON PUBLIC PIWIK SERVERS
@@ -457,28 +464,28 @@ enable_auto_database_size_estimate = 1
 use_custom_logo = 0
 
 [mail]
-defaultHostnameIfEmpty = defaultHostnameIfEmpty.example.org  ; default Email @hostname, if current host can't be read from system variables
-transport =							; smtp (using the configuration below) or empty (using built-in mail() function)
-port =								; optional; defaults to 25 when security is none or tls; 465 for ssl
-host =								; SMTP server address
-type =								; SMTP Auth type. By default: NONE. For example: LOGIN
-username =							; SMTP username
-password =							; SMTP password
-encryption =						; SMTP transport-layer encryption, either 'ssl', 'tls', or empty (i.e., none).
+defaultHostnameIfEmpty = defaultHostnameIfEmpty.example.org ; default Email @hostname, if current host can't be read from system variables
+transport = ; smtp (using the configuration below) or empty (using built-in mail() function)
+port = ; optional; defaults to 25 when security is none or tls; 465 for ssl
+host = ; SMTP server address
+type = ; SMTP Auth type. By default: NONE. For example: LOGIN
+username = ; SMTP username
+password = ; SMTP password
+encryption = ; SMTP transport-layer encryption, either 'ssl', 'tls', or empty (i.e., none).
 
 [proxy]
-type = BASIC						; proxy type for outbound/outgoing connections; currently, only BASIC is supported
-host = 								; Proxy host: the host name of your proxy server (mandatory)
-port = 								; Proxy port: the port that the proxy server listens to. There is no standard default, but 80, 1080, 3128, and 8080 are popular
-username = 							; Proxy username: optional; if specified, password is mandatory
-password = 							; Proxy password: optional; if specified, username is mandatory
+type = BASIC ; proxy type for outbound/outgoing connections; currently, only BASIC is supported
+host = ; Proxy host: the host name of your proxy server (mandatory)
+port = ; Proxy port: the port that the proxy server listens to. There is no standard default, but 80, 1080, 3128, and 8080 are popular
+username = ; Proxy username: optional; if specified, password is mandatory
+password = ; Proxy password: optional; if specified, username is mandatory
 
 [log]
 ;possible values for log: screen, database, file
 ; by default, standard logging/debug messages are hidden from screen
-;logger_message[]		= screen
-logger_error[]			= screen
-logger_exception[]		= screen
+;logger_message[] = screen
+logger_error[] = screen
+logger_exception[] = screen
 
 ; if set to 1, only requests done in CLI mode (eg. the archive.php cron run) will be logged
 ; NOTE: log_only_when_debug_parameter will also be checked for
@@ -490,70 +497,71 @@ log_only_when_debug_parameter = 0
 
 ; if configured to log in files, log files will be created in this path
 ; eg. if the value is tmp/logs files will be created in /path/to/piwik/tmp/logs/
-logger_file_path		= tmp/logs
+logger_file_path = tmp/logs
 
 ; all calls to the API (method name, parameters, execution time, caller IP, etc.)
 ; disabled by default as it can cause serious overhead and should only be used wisely
-;logger_api_call[]		= file
+;logger_api_call[] = file
 
 [smarty]
 ; the list of directories in which to look for templates
-template_dir[]	= plugins
-template_dir[]	= themes/default
-template_dir[]	= themes
+template_dir[] = plugins
+template_dir[] = themes/default
+template_dir[] = themes
 
-plugins_dir[]	= core/SmartyPlugins
-plugins_dir[] 	= libs/Smarty/plugins
+plugins_dir[] = core/SmartyPlugins
+plugins_dir[] = libs/Smarty/plugins
 
-compile_dir		= tmp/templates_c
-cache_dir		= tmp/cache
+compile_dir = tmp/templates_c
+cache_dir = tmp/cache
 
 ; error reporting inside Smarty
 error_reporting = E_ALL|E_NOTICE
 
 [Plugins]
-Plugins[] 		= CorePluginsAdmin
-Plugins[] 		= CoreAdminHome
-Plugins[] 		= CoreHome
-Plugins[] 		= Proxy
-Plugins[] 		= API
-Plugins[] 		= Widgetize
-Plugins[] 		= Transitions
-Plugins[] 		= LanguagesManager
-Plugins[] 		= Actions
-Plugins[] 		= Dashboard
-Plugins[] 		= MultiSites
-Plugins[] 		= Referers
-Plugins[] 		= UserSettings
-Plugins[]		= Goals
-Plugins[]		= SEO
+Plugins[] = CorePluginsAdmin
+Plugins[] = CoreAdminHome
+Plugins[] = CoreHome
+Plugins[] = Proxy
+Plugins[] = API
+Plugins[] = Widgetize
+Plugins[] = Transitions
+Plugins[] = LanguagesManager
+Plugins[] = Actions
+Plugins[] = Dashboard
+Plugins[] = MultiSites
+Plugins[] = Referers
+Plugins[] = UserSettings
+Plugins[] = Goals
+Plugins[] = SEO
 
-Plugins[] 		= UserCountry
-Plugins[] 		= VisitsSummary
-Plugins[] 		= VisitFrequency
-Plugins[] 		= VisitTime
-Plugins[] 		= VisitorInterest
-Plugins[] 		= ExampleAPI
-Plugins[] 		= ExamplePlugin
-Plugins[]		= ExampleRssWidget
-Plugins[] 		= Provider
-Plugins[]		= Feedback
+Plugins[] = UserCountry
+Plugins[] = VisitsSummary
+Plugins[] = VisitFrequency
+Plugins[] = VisitTime
+Plugins[] = VisitorInterest
+Plugins[] = ExampleAPI
+Plugins[] = ExamplePlugin
+Plugins[] = ExampleRssWidget
+Plugins[] = Provider
+Plugins[] = Feedback
 
-Plugins[] 		= Login
-Plugins[] 		= UsersManager
-Plugins[] 		= SitesManager
-Plugins[] 		= Installation
-Plugins[] 		= CoreUpdater
-Plugins[]		= PDFReports
-Plugins[] 		= UserCountryMap
-Plugins[] 		= Live
-Plugins[]		= CustomVariables
-Plugins[]		= PrivacyManager
-Plugins[]		= ImageGraph
-Plugins[]		= DoNotTrack
-Plugins[]		= Annotations
-Plugins[]		= MobileMessaging
-Plugins[]		= Overlay
+Plugins[] = Login
+Plugins[] = UsersManager
+Plugins[] = SitesManager
+Plugins[] = Installation
+Plugins[] = CoreUpdater
+Plugins[] = PDFReports
+Plugins[] = UserCountryMap
+Plugins[] = Live
+Plugins[] = CustomVariables
+Plugins[] = PrivacyManager
+Plugins[] = ImageGraph
+Plugins[] = DoNotTrack
+Plugins[] = Annotations
+Plugins[] = MobileMessaging
+Plugins[] = Overlay
+Plugins[] = SegmentEditor
 
 [PluginsInstalled]
 PluginsInstalled[] = Login

@@ -25,6 +25,11 @@ class Piwik_Actions_Archiving
         Piwik_Tracker_Action::TYPE_ACTION_NAME,
         Piwik_Tracker_Action::TYPE_SITE_SEARCH,
     );
+    
+    private static $actionColumnAggregationOperations = array(
+        Piwik_Archive::INDEX_PAGE_MAX_TIME_GENERATION => 'max',
+        Piwik_Archive::INDEX_PAGE_MIN_TIME_GENERATION => 'min'
+    );
 
     static protected $invalidSummedColumnNameToRenamedNameFromPeriodArchive = array(
         Piwik_Archive::INDEX_NB_UNIQ_VISITORS            => Piwik_Archive::INDEX_SUM_DAILY_NB_UNIQ_VISITORS,
@@ -47,17 +52,26 @@ class Piwik_Actions_Archiving
 
     /**
      * Archives Actions reports for a Period
-     * @param Piwik_ArchiveProcessing $archiveProcessing
+     * @param Piwik_ArchiveProcessing_Period $archiveProcessing
      * @return bool
      */
-    public function archivePeriod(Piwik_ArchiveProcessing $archiveProcessing)
+    public function archivePeriod(Piwik_ArchiveProcessing_Period $archiveProcessing)
     {
         Piwik_Actions_ArchivingHelper::reloadConfig();
         $dataTableToSum = array(
             'Actions_actions',
+            'Actions_actions_url',
+        );
+        $archiveProcessing->archiveDataTable($dataTableToSum,
+            self::$invalidSummedColumnNameToRenamedNameFromPeriodArchive,
+            Piwik_Actions_ArchivingHelper::$maximumRowsInDataTableLevelZero,
+            Piwik_Actions_ArchivingHelper::$maximumRowsInSubDataTable,
+            Piwik_Actions_ArchivingHelper::$columnToSortByBeforeTruncation,
+            self::$actionColumnAggregationOperations);
+
+        $dataTableToSum = array(
             'Actions_downloads',
             'Actions_outlink',
-            'Actions_actions_url',
             'Actions_sitesearch',
         );
         $nameToCount = $archiveProcessing->archiveDataTable($dataTableToSum,
@@ -65,7 +79,7 @@ class Piwik_Actions_Archiving
             Piwik_Actions_ArchivingHelper::$maximumRowsInDataTableLevelZero,
             Piwik_Actions_ArchivingHelper::$maximumRowsInSubDataTable,
             Piwik_Actions_ArchivingHelper::$columnToSortByBeforeTruncation);
-
+        
         $archiveProcessing->archiveNumericValuesSum(array(
                                                          'Actions_nb_pageviews',
                                                          'Actions_nb_uniq_pageviews',
@@ -92,6 +106,33 @@ class Piwik_Actions_Archiving
     public function archiveDay(Piwik_ArchiveProcessing $archiveProcessing)
     {
         $rankingQueryLimit = self::getRankingQueryLimit();
+        
+        // FIXME: This is a quick fix for #3482. The actual cause of the bug is that
+        // the site search & performance metrics additions to 
+        // Piwik_Actions_ArchivingHelper::updateActionsTableWithRowQuery expect every
+        // row to have 'type' data, but not all of the SQL queries that are run w/o
+        // ranking query join on the log_action table and thus do not select the
+        // log_action.type column.
+        // 
+        // NOTES: Archiving logic can be generalized as follows:
+        // 0) Do SQL query over log_link_visit_action & join on log_action to select
+        //    some metrics (like visits, hits, etc.)
+        // 1) For each row, cache the action row & metrics. (This is done by
+        //    updateActionsTableWithRowQuery for result set rows that have 
+        //    name & type columns.)
+        // 2) Do other SQL queries for metrics we can't put in the first query (like
+        //    entry visits, exit vists, etc.) w/o joining log_action.
+        // 3) For each row, find the cached row by idaction & add the new metrics to
+        //    it. (This is done by updateActionsTableWithRowQuery for result set rows
+        //    that DO NOT have name & type columns.)
+        // 
+        // The site search & performance metrics additions expect a 'type' all the time
+        // which breaks the original pre-rankingquery logic. Ranking query requires a
+        // join, so the bug is only seen when ranking query is disabled.
+        if ($rankingQueryLimit === 0) {
+            $rankingQueryLimit = 100000;
+        }
+        
         Piwik_Actions_ArchivingHelper::reloadConfig();
 
         $this->initActionsTables();
@@ -129,7 +170,12 @@ class Piwik_Actions_Archiving
 						then 0
 						else 1
 					end
-				) as `" . Piwik_Archive::INDEX_PAGE_NB_HITS_WITH_TIME_GENERATION . "`";
+				) as `" . Piwik_Archive::INDEX_PAGE_NB_HITS_WITH_TIME_GENERATION . "`,
+				min(" . Piwik_Tracker_Action::DB_COLUMN_TIME_GENERATION . ") / 1000
+				    as `" . Piwik_Archive::INDEX_PAGE_MIN_TIME_GENERATION . "`,
+				max(" . Piwik_Tracker_Action::DB_COLUMN_TIME_GENERATION . ") / 1000
+                    as `" . Piwik_Archive::INDEX_PAGE_MAX_TIME_GENERATION . "`
+				";
 
         $from = array(
             "log_link_visit_action",
@@ -160,6 +206,8 @@ class Piwik_Actions_Archiving
             }
             $rankingQuery->addColumn(Piwik_Archive::INDEX_PAGE_SUM_TIME_GENERATION, 'sum');
             $rankingQuery->addColumn(Piwik_Archive::INDEX_PAGE_NB_HITS_WITH_TIME_GENERATION, 'sum');
+            $rankingQuery->addColumn(Piwik_Archive::INDEX_PAGE_MIN_TIME_GENERATION, 'min');
+            $rankingQuery->addColumn(Piwik_Archive::INDEX_PAGE_MAX_TIME_GENERATION, 'max');
             $rankingQuery->partitionResultIntoMultipleGroups('type', array_keys($this->actionsTablesByType));
         }
 
@@ -531,6 +579,12 @@ class Piwik_Actions_Archiving
             $dataTable = new Piwik_DataTable();
             $dataTable->setMaximumAllowedRows(Piwik_Actions_ArchivingHelper::$maximumRowsInDataTableLevelZero);
 
+            if ($type == Piwik_Tracker_Action::TYPE_ACTION_URL
+                || $type == Piwik_Tracker_Action::TYPE_ACTION_NAME) {
+                // for page urls and page titles, performance metrics exist and have to be aggregated correctly
+                $dataTable->setColumnAggregationOperations(self::$actionColumnAggregationOperations);
+            }
+            
             $this->actionsTablesByType[$type] = $dataTable;
         }
     }

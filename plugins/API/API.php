@@ -36,7 +36,7 @@ class Piwik_API extends Piwik_Plugin
 
     public function addTopMenu()
     {
-        $apiUrlParams = array('module' => 'API', 'action' => 'listAllAPI');
+        $apiUrlParams = array('module' => 'API', 'action' => 'listAllAPI', 'segment' => false);
         $tooltip = Piwik_Translate('API_TopLinkTooltip');
 
         Piwik_AddTopMenu('General_API', $apiUrlParams, true, 7, $isHTML = false, $tooltip);
@@ -78,7 +78,8 @@ class Piwik_API extends Piwik_Plugin
  * <li>the list of metrics that will be returned by each method, along with their human readable name, via "getDefaultMetrics" and "getDefaultProcessedMetrics"</li>
  * <li>the list of segments metadata supported by all functions that have a 'segment' parameter</li>
  * <li>the (truly magic) method "getProcessedReport" will return a human readable version of any other report, and include the processed metrics such as
- * conversion rate, time on site, etc. which are not directly available in other methods.
+ * conversion rate, time on site, etc. which are not directly available in other methods.</li>
+ * <li>the method "getSuggestedValuesForSegment" returns top suggested values for a particular segment. It uses the Live.getLastVisitsDetails API to fetch the most recently used values, and will return the most often used values first.</li>
  * </ul>
  * The Metadata API is for example used by the Piwik Mobile App to automatically display all Piwik reports, with translated report & columns names and nicely formatted values.
  * More information on the <a href='http://piwik.org/docs/analytics-api/metadata/' target='_blank'>Metadata API documentation page</a>
@@ -270,7 +271,7 @@ class Piwik_API_API
 
         $segments[] = array(
             'type'           => 'dimension',
-            'category'       => 'Visit',
+            'category'       => Piwik_Translate('General_Visit'),
             'name'           => 'General_VisitorIP',
             'segment'        => 'visitIp',
             'acceptedValues' => '13.54.122.1, etc.',
@@ -280,7 +281,7 @@ class Piwik_API_API
         );
         $segments[] = array(
             'type'           => 'dimension',
-            'category'       => 'Visit',
+            'category'       => Piwik_Translate('General_Visit'),
             'name'           => 'General_VisitorID',
             'segment'        => 'visitorId',
             'acceptedValues' => '34c31e04394bdc63 - any 16 Hexadecimal chars ID, which can be fetched using the Tracking API function getVisitorId()',
@@ -289,14 +290,14 @@ class Piwik_API_API
         );
         $segments[] = array(
             'type'       => 'metric',
-            'category'   => 'Visit',
+            'category'   => Piwik_Translate('General_Visit'),
             'name'       => 'General_NbActions',
             'segment'    => 'actions',
             'sqlSegment' => 'log_visit.visit_total_actions',
         );
         $segments[] = array(
             'type'           => 'metric',
-            'category'       => 'Visit',
+            'category'       => Piwik_Translate('General_Visit'),
             'name'           => 'General_NbSearches',
             'segment'        => 'searches',
             'sqlSegment'     => 'log_visit.visit_total_searches',
@@ -304,37 +305,37 @@ class Piwik_API_API
         );
         $segments[] = array(
             'type'       => 'metric',
-            'category'   => 'Visit',
+            'category'   => Piwik_Translate('General_Visit'),
             'name'       => 'General_ColumnVisitDuration',
             'segment'    => 'visitDuration',
             'sqlSegment' => 'log_visit.visit_total_time',
         );
         $segments[] = array(
             'type'           => 'dimension',
-            'category'       => 'Visit',
-            'name'           => Piwik_Translate('General_VisitType') . ". " . Piwik_Translate('General_VisitTypeExample', '"&segment=visitorType==returning,visitorType==returningCustomer"'),
+            'category'       => Piwik_Translate('General_Visit'),
+            'name'           => Piwik_Translate('General_VisitType') ,
             'segment'        => 'visitorType',
-            'acceptedValues' => 'new, returning, returningCustomer',
+            'acceptedValues' => 'new, returning, returningCustomer' . ". " . Piwik_Translate('General_VisitTypeExample', '"&segment=visitorType==returning,visitorType==returningCustomer"'),
             'sqlSegment'     => 'log_visit.visitor_returning',
             'sqlFilter'      => create_function('$type', 'return $type == "new" ? 0 : ($type == "returning" ? 1 : 2);'),
         );
         $segments[] = array(
             'type'       => 'metric',
-            'category'   => 'Visit',
+            'category'   => Piwik_Translate('General_Visit'),
             'name'       => 'General_DaysSinceLastVisit',
             'segment'    => 'daysSinceLastVisit',
             'sqlSegment' => 'log_visit.visitor_days_since_last',
         );
         $segments[] = array(
             'type'       => 'metric',
-            'category'   => 'Visit',
+            'category'   => Piwik_Translate('General_Visit'),
             'name'       => 'General_DaysSinceFirstVisit',
             'segment'    => 'daysSinceFirstVisit',
             'sqlSegment' => 'log_visit.visitor_days_since_first',
         );
         $segments[] = array(
             'type'       => 'metric',
-            'category'   => 'Visit',
+            'category'   => Piwik_Translate('General_Visit'),
             'name'       => 'General_NumberOfVisits',
             'segment'    => 'visitCount',
             'sqlSegment' => 'log_visit.visitor_count_visits',
@@ -342,7 +343,7 @@ class Piwik_API_API
 
         $segments[] = array(
             'type'           => 'dimension',
-            'category'       => 'Visit',
+            'category'       => Piwik_Translate('General_Visit'),
             'name'           => 'General_VisitConvertedGoal',
             'segment'        => 'visitConverted',
             'acceptedValues' => '0, 1',
@@ -351,17 +352,18 @@ class Piwik_API_API
 
         $segments[] = array(
             'type'           => 'dimension',
-            'category'       => 'Visit',
-            'name'           => Piwik_Translate('General_EcommerceVisitStatus', '"&segment=visitEcommerceStatus==ordered,visitEcommerceStatus==orderedThenAbandonedCart"'),
+            'category'       => Piwik_Translate('General_Visit'),
+            'name'           => Piwik_Translate('General_EcommerceVisitStatusDesc'),
             'segment'        => 'visitEcommerceStatus',
-            'acceptedValues' => implode(", ", self::$visitEcommerceStatus),
+            'acceptedValues' => implode(", ", self::$visitEcommerceStatus)
+                   . '. '. Piwik_Translate('General_EcommerceVisitStatusEg', '"&segment=visitEcommerceStatus==ordered,visitEcommerceStatus==orderedThenAbandonedCart"'),
             'sqlSegment'     => 'log_visit.visit_goal_buyer',
             'sqlFilter'      => array('Piwik_API_API', 'getVisitEcommerceStatus'),
         );
 
         $segments[] = array(
             'type'       => 'metric',
-            'category'   => 'Visit',
+            'category'   => Piwik_Translate('General_Visit'),
             'name'       => 'General_DaysSinceLastEcommerceOrder',
             'segment'    => 'daysSinceLastEcommerceOrder',
             'sqlSegment' => 'log_visit.visitor_days_since_order',
@@ -477,6 +479,7 @@ class Piwik_API_API
     /**
      * Returns the URL to application SVG Logo
      *
+     * @ignore
      * @param bool $pathOnly If true, returns path relative to doc root. Otherwise, returns a URL.
      * @return string
      */
@@ -496,7 +499,7 @@ class Piwik_API_API
 
     /**
      * Returns whether there is an SVG Logo available.
-     *
+     * @ignore
      * @return bool
      */
     public function hasSVGLogo()
@@ -583,14 +586,6 @@ class Piwik_API_API
                 // set metric documentation to default if it's not set
                 $availableReport['metricsDocumentation'] = $this->getDefaultMetricsDocumentation();
             }
-
-            // if hide/show columns specified, hide/show metrics & docs
-            $availableReport['metrics'] = $this->hideShowMetrics($availableReport['metrics']);
-            $availableReport['processedMetrics'] = $this->hideShowMetrics($availableReport['processedMetrics']);
-            if (isset($availableReport['metricsDocumentation'])) {
-                $availableReport['metricsDocumentation'] =
-                    $this->hideShowMetrics($availableReport['metricsDocumentation']);
-            }
         }
 
         // Some plugins need to add custom metrics after all plugins hooked in
@@ -622,6 +617,16 @@ class Piwik_API_API
             }
             $availableReport['metrics'] = $cleanedMetrics;
 
+            // if hide/show columns specified, hide/show metrics & docs
+            $availableReport['metrics'] = $this->hideShowMetrics($availableReport['metrics']);
+            if (isset($availableReport['processedMetrics'])) {
+                $availableReport['processedMetrics'] = $this->hideShowMetrics($availableReport['processedMetrics']);
+            }
+            if (isset($availableReport['metricsDocumentation'])) {
+                $availableReport['metricsDocumentation'] =
+                    $this->hideShowMetrics($availableReport['metricsDocumentation']);
+            }
+            
             // Remove array elements that are false (to clean up API output)
             foreach ($availableReport as $attributeName => $attributeValue) {
                 if (empty($attributeValue)) {
@@ -909,7 +914,7 @@ class Piwik_API_API
             foreach ($columns as $name => $ignore) {
                 // if the current column should not be kept, remove it
                 $idx = array_search($name, $columnsToKeep);
-                if ($idx === FALSE) // if $name is not in $columnsToKeep
+                if ($idx === false) // if $name is not in $columnsToKeep
                 {
                     unset($columns[$name]);
                 }
@@ -1030,6 +1035,7 @@ class Piwik_API_API
                 Piwik_Translate('Referers_Referers'),
                 Piwik_Translate('Goals_Goals'),
                 Piwik_Translate('General_Visitors'),
+                Piwik_Translate('DevicesDetection_DevicesDetection'),
                 Piwik_Translate('UserSettings_VisitorSettings'),
             );
         }
@@ -1056,8 +1062,10 @@ class Piwik_API_API
         $meta = Piwik_API_API::getInstance()->getReportMetadata($idSite, $period, $date);
         foreach ($meta as $reportMeta) {
             // scan all *.get reports
-            if ($reportMeta['action'] == 'get' && !isset($reportMeta['parameters'])
+            if ($reportMeta['action'] == 'get'
+                && !isset($reportMeta['parameters'])
                 && $reportMeta['module'] != 'API'
+                && !empty($reportMeta['metrics'])
             ) {
                 $plugin = $reportMeta['module'];
                 foreach ($reportMeta['metrics'] as $column => $columnTranslation) {
@@ -1145,7 +1153,7 @@ class Piwik_API_API
     public function getRowEvolution($idSite, $period, $date, $apiModule, $apiAction, $label = false, $segment = false, $column = false, $language = false, $idGoal = false, $legendAppendMetric = true, $labelUseAbsoluteUrl = true)
     {
         // validation of requested $period & $date
-        if ($period == 'range') {
+          if ($period == 'range') {
             // load days in the range
             $period = 'day';
         }
@@ -1154,11 +1162,7 @@ class Piwik_API_API
             throw new Exception("Row evolutions can not be processed with this combination of \'date\' and \'period\' parameters.");
         }
 
-        // this is needed because Piwik_API_Proxy uses Piwik_Common::getRequestVar which in turn
-        // uses Piwik_Common::sanitizeInputValue. This causes the > that separates recursive labels
-        // to become &gt; and we need to undo that here.
-        $label = Piwik_Common::unsanitizeInputValue($label);
-
+        $label = Piwik_API_ResponseBuilder::unsanitizeLabelParameter($label);
         if ($label) {
             $labels = explode(',', $label);
             $labels = array_unique($labels);
@@ -1173,10 +1177,30 @@ class Piwik_API_API
             foreach ($dataTable->getArray() as $table) {
                 $labels = array_merge($labels, $table->getColumn('label'));
             }
-            $labels = array_unique($labels);
+            $labels = array_values(array_unique($labels));
+            
+            // if the filter_limit query param is set, treat it as a request to limit
+            // the number of labels used
+            $limit = Piwik_Common::getRequestVar('filter_limit', false);
+            if ($limit != false
+                && $limit >= 0
+            ) {
+                $labels = array_slice($labels, 0, $limit);
+            }
+            
+            // set label index metadata
+            $labelsToIndex = array_flip($labels);
+            foreach ($dataTable->getArray() as $table) {
+                foreach ($table->getRows() as $row) {
+                    $label = $row->getColumn('label');
+                    if (isset($labelsToIndex[$label])) {
+                        $row->setMetadata('label_index', $labelsToIndex[$label]);
+                    }
+                }
+            }
         }
 
-        if (count($labels) > 1) {
+        if (count($labels) != 1) {
             $data = $this->getMultiRowEvolution(
                 $dataTable,
                 $idSite,
@@ -1218,7 +1242,7 @@ class Piwik_API_API
     {
         $metadata = $this->getRowEvolutionMetaData($idSite, $period, $date, $apiModule, $apiAction, $language, $idGoal);
         $metricNames = array_keys($metadata['metrics']);
-
+        
         $logo = $actualLabel = false;
         $urlFound = false;
         foreach ($dataTable->getArray() as $date => $subTable) {
@@ -1305,19 +1329,23 @@ class Piwik_API_API
         $label = array_map('rawurlencode', $label);
 
         $parameters = array(
-            'method'                  => $apiModule . '.' . $apiAction,
-            'label'                   => $label,
-            'idSite'                  => $idSite,
-            'period'                  => $period,
-            'date'                    => $date,
-            'format'                  => 'original',
-            'serialize'               => '0',
-            'segment'                 => $segment,
-            'idGoal'                  => $idGoal,
+            'method'                   => $apiModule . '.' . $apiAction,
+            'label'                    => $label,
+            'idSite'                   => $idSite,
+            'period'                   => $period,
+            'date'                     => $date,
+            'format'                   => 'original',
+            'serialize'                => '0',
+            'segment'                  => $segment,
+            'idGoal'                   => $idGoal,
+            
+            // data for row evolution should NOT be limited
+            'filter_limit'             => -1,
 
-            // if more than one label is used, we add empty rows for labels we can't
-            // find to ensure we know the order of the rows in the returned data table
-            'labelFilterAddEmptyRows' => count($label) > 1 ? 1 : 0,
+            // if more than one label is used, we add metadata to ensure we know which
+            // row corresponds with which label (since the labels can change, and rows
+            // can be sorted in a different order)
+            'labelFilterAddLabelIndex' => count($label) > 1 ? 1 : 0,
         );
 
         // add "processed metrics" like actions per visit or bounce rate
@@ -1329,7 +1357,7 @@ class Piwik_API_API
             $apiModule != 'Actions'
             &&
             ($apiModule != 'Goals' || ($apiAction != 'getVisitsUntilConversion' && $apiAction != 'getDaysToConversion'))
-            && $label // do not request processed metrics when retrieving top n labels
+            && !empty($label)
         ) {
             $parameters['filter_add_columns_when_show_all_columns'] = '1';
         }
@@ -1470,15 +1498,12 @@ class Piwik_API_API
             $metrics = array_keys($metadata['metrics']);
             $column = reset($metrics);
         }
-
+        
         // get the processed label and logo (if any) for every requested label
         $actualLabels = $logos = array();
         foreach ($labels as $labelIdx => $label) {
             foreach ($dataTable->getArray() as $table) {
-                // find row for this label. LabelFilter will add empty rows and
-                // keep them ordered in the same way the labels array is, so we
-                // assume the $labelIdx is also the row Id
-                $labelRow = $table->getRowFromId($labelIdx);
+                $labelRow = $this->getRowEvolutionRowFromLabelIdx($table, $labelIdx);
 
                 if ($labelRow) {
                     $actualLabels[$labelIdx] = $this->getRowUrlForEvolutionLabel(
@@ -1503,20 +1528,28 @@ class Piwik_API_API
         foreach ($dataTable->getArray() as $tableLabel => $table) {
             $newRow = new Piwik_DataTable_Row();
 
-            foreach ($table->getRows() as $rowId => $row) {
-                $value = $row->getColumn($column);
-                $value = floatVal(str_replace(',', '.', $value));
+            foreach ($labels as $labelIdx => $label) {
+                $row = $this->getRowEvolutionRowFromLabelIdx($table, $labelIdx);
+                
+                $value = 0;
+                if ($row) {
+                    $value = $row->getColumn($column);
+                    $value = floatVal(str_replace(',', '.', $value));
+                }
+                
                 if ($value == '') {
                     $value = 0;
                 }
-
-                $newLabel = $column . '_' . $rowId; // $rowId corresponds to the label index
-
+                
+                $newLabel = $column . '_' . (int)$labelIdx;
                 $newRow->addColumn($newLabel, $value);
             }
-
+            
             $newTable = $table->getEmptyClone();
-            $newTable->addRow($newRow);
+            if (!empty($labels)) { // only add a row if the row has data (no labels === no data)
+                $newTable->addRow($newRow);
+            }
+            
             $dataTableMulti->addTable($newTable, $tableLabel);
         }
 
@@ -1546,6 +1579,26 @@ class Piwik_API_API
             'metadata'   => $metadata
         );
     }
+    
+    /**
+     * Returns the row in a datatable by its label_index metadata.
+     * 
+     * @param Piwik_DataTable $table
+     * @param int $labelIdx
+     * @return Piwik_DataTable_Row|false
+     */
+    private function getRowEvolutionRowFromLabelIdx($table, $labelIdx)
+    {
+        $labelIdx = (int)$labelIdx;
+        foreach ($table->getRows() as $row)
+        {
+            if ($row->getMetadata('label_index') === $labelIdx)
+            {
+                return $row;
+            }
+        }
+        return false;
+    }
 
     /**
      * Returns a prettier, more comprehensible version of a row evolution label
@@ -1567,13 +1620,100 @@ class Piwik_API_API
             return array();
         }
 
-        $urls = Piwik_Common::unsanitizeInputValues($urls);
+        $urls = array_map('urldecode', $urls);
+        $urls = array_map(array('Piwik_Common','unsanitizeInputValue'), $urls);
 
         $result = array();
         foreach ($urls as $url) {
-            $req = new Piwik_API_Request($url);
+            $req = new Piwik_API_Request($url . '&format=php&serialize=0');
             $result[] = $req->process();
         }
         return $result;
     }
+
+    /**
+     * Given a segment, will return a list of the most used values for this particular segment.
+     * @param $segmentName
+     * @param $idSite
+     * @throws Exception
+     */
+    public function getSuggestedValuesForSegment($segmentName, $idSite)
+    {
+        Piwik::checkUserHasViewAccess($idSite);
+        $maxSuggestionsToReturn = 30;
+        $segmentsMetadata = $this->getSegmentsMetadata($idSite, $_hideImplementationData = false);
+
+        $segmentFound = false;
+        foreach($segmentsMetadata as $segmentMetadata) {
+            if($segmentMetadata['segment'] == $segmentName) {
+                $segmentFound = $segmentMetadata;
+                break;
+            }
+        }
+        if(empty($segmentFound)) {
+            throw new Exception("Requested segment not found.");
+        }
+
+        $startDate = Piwik_Date::now()->subDay(60)->toString();
+        $requestLastVisits = "method=Live.getLastVisitsDetails
+            &idSite=$idSite
+            &period=range
+            &date=$startDate,today
+            &format=original
+            &serialize=0
+            &flat=1";
+
+        // Select non empty fields only
+        // Note: this optimization has only a very minor impact
+        $requestLastVisits.= "&segment=$segmentName".urlencode('!=');
+
+        // By default Live fetches all actions for all visitors, but we'd rather do this only when required
+        if($this->doesSegmentNeedActionsData($segmentName)) {
+            $requestLastVisits .= "&filter_limit=500";
+        } else {
+            $requestLastVisits .= "&doNotFetchActions=1";
+            $requestLastVisits .= "&filter_limit=1000";
+        }
+
+        $request = new Piwik_API_Request($requestLastVisits);
+        $table = $request->process();
+        if(empty($table)) {
+            throw new Exception("There was no data to suggest for $segmentName");
+        }
+
+        // Cleanup data to return the top suggested (non empty) labels for this segment
+        $values = $table->getColumn($segmentName);
+
+        // Select also flattened keys (custom variables "page" scope, page URLs for one visit, page titles for one visit)
+        $valuesBis = $table->getColumnsStartingWith($segmentName . Piwik_DataTable_Filter_ColumnDelete::APPEND_TO_COLUMN_NAME_TO_KEEP);
+        $values = array_merge($values, $valuesBis);
+
+        // remove false values (while keeping zeros)
+        $values = array_filter( $values, 'strlen' );
+
+        // we have a list of all values. let's show the most frequently used first.
+        $values = array_count_values( $values );
+        arsort($values);
+        $values = array_keys($values);
+
+        $values = array_map( array('Piwik_Common', 'unsanitizeInputValue'), $values);
+
+        $values = array_slice($values, 0, $maxSuggestionsToReturn);
+        return $values;
+    }
+
+    /**
+     * @param $segmentName
+     * @return bool
+     */
+    protected function doesSegmentNeedActionsData($segmentName)
+    {
+        $segmentsNeedActionsInfo = array('visitConvertedGoalId',
+                                         'pageUrl', 'pageTitle', 'siteSearchKeyword',
+                                         'entryPageTitle', 'entryPageUrl', 'exitPageTitle', 'exitPageUrl');
+        $isCustomVariablePage = stripos($segmentName, 'customVariablePage') !== false;
+        $doesSegmentNeedActionsInfo = in_array($segmentName, $segmentsNeedActionsInfo) || $isCustomVariablePage;
+        return $doesSegmentNeedActionsInfo;
+    }
+
 }

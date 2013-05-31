@@ -48,7 +48,7 @@
 
         {capture assign='visitorColumnContent'}
             &nbsp;
-            <img src="{$visitor.columns.countryFlag}" title="{$visitor.columns.location|escape:'html'}, Provider {$visitor.columns.provider|escape:'html'}"/>
+            <img src="{$visitor.columns.countryFlag}" title="{$visitor.columns.location|escape:'html'}, Provider {$visitor.columns.providerName|escape:'html'}"/>
             &nbsp;
             {if $visitor.columns.plugins}
             <img src="{$visitor.columns.browserIcon}" title="{'UserSettings_BrowserWithPluginsEnabled'|translate:$visitor.columns.browserName:$visitor.columns.plugins}"/>
@@ -107,11 +107,11 @@
 			GPS (lat/long): {$visitor.columns.latitude|escape:'html'},{$visitor.columns.longitude|escape:'html'}{/if}">
                         IP: {$visitor.columns.visitIp}</span>{/if}
 
-                    {if (isset($visitor.columns.provider)&&$visitor.columns.provider!='IP')}
+                    {if (isset($visitor.columns.providerName)&&$visitor.columns.providerName!='IP')}
                         <br/>
                         {'Provider_ColumnProvider'|translate}:
                         <a href="{$visitor.columns.providerUrl}" target="_blank" title="{$visitor.columns.providerUrl}" style="text-decoration:underline;">
-                            {$visitor.columns.provider}
+                            {$visitor.columns.providerName}
                         </a>
                     {/if}
                     {if !empty($visitor.columns.customVariables)}
@@ -187,7 +187,7 @@
                         {capture assign='visitorHasSomeEcommerceActivity'}0{/capture}
                         {foreach from=$visitor.columns.actionDetails item=action}
                             {capture assign='customVariablesTooltip'}{if !empty($action.customVariables)}{'CustomVariables_CustomVariables'|translate}
-                                {foreach from=$action.customVariables item=customVariable key=id}{capture assign=name}customVariableName{$id}{/capture}{capture assign=value}customVariableValue{$id}{/capture}
+                                {foreach from=$action.customVariables item=customVariable key=id}{capture assign=name}customVariablePageName{$id}{/capture}{capture assign=value}customVariablePageValue{$id}{/capture}
 
                                     - {$customVariable.$name|escape:'html'} {if strlen($customVariable.$value) > 0} = {$customVariable.$value|escape:'html'}{/if}
                                 {/foreach}{/if}
@@ -196,11 +196,15 @@
                             || $action.type == 'ecommerceOrder'
                             || $action.type == 'ecommerceAbandonedCart'}
                                 <li class="{if !empty($action.goalName)}goal{else}action{/if}"
-                                    title="{$action.serverTimePretty|escape:'html'}{if !empty($action.url) && strlen(trim($action.url))} - {$action.url|escape:'html'}{/if} {if strlen(trim($customVariablesTooltip))}
+                                    title="{$action.serverTimePretty|escape:'html'}{if !empty($action.url) && strlen(trim($action.url))}
+                                    
+{$action.url|escape:'html'}{/if} {if strlen(trim($customVariablesTooltip))}
 
 {$customVariablesTooltip|trim}{/if}{if isset($action.timeSpentPretty)}
 
-{'General_TimeOnPage'|translate}: {$action.timeSpentPretty}{/if}">
+{'General_TimeOnPage'|translate}: {$action.timeSpentPretty}{/if}{if isset($action.generationTime)}
+
+{'General_ColumnGenerationTime'|translate}: {$action.generationTime}{/if}">
                                     {if $action.type == 'ecommerceOrder' || $action.type == 'ecommerceAbandonedCart'}
                                     {* Ecommerce Abandoned Cart / Ecommerce Order *}
                                         <img src="{$action.icon}"/>
@@ -248,9 +252,12 @@
                                     {elseif empty($action.goalName)}
                                     {* Page view / Download / Outlink *}
                                         {if !empty($action.pageTitle)}
+                                            {$action.pageTitle|unescape|urldecode|escape:'html'|truncate:80:"...":true}
+                                        {/if}
+                                        {if !empty($action.siteSearchKeyword)}
                                             {if $action.type == 'search'}<img src='{$action.icon}'
                                                                               title='{'Actions_SubmenuSitesearch'|translate|escape:'html'}'>{/if}
-                                            {$action.pageTitle|unescape|urldecode|escape:'html'|truncate:80:"...":true}
+                                            {$action.siteSearchKeyword|unescape|urldecode|escape:'html'|truncate:80:"...":true}
                                         {/if}
                                         {if !empty($action.url)}
                                             {if $action.type == 'action' && !empty($action.pageTitle)}<br/>{/if}
@@ -327,6 +334,17 @@
                         prevhtml = current;
                         prevelement = $(this);
                     }
+                    
+                    $(this).tooltip({
+                        track: true,
+                        show: false,
+                        hide: false,
+                        content: function() {
+                            var title = $(this).attr('title');
+                            return $('<a>').text( title ).html().replace(/\n/g, '<br />');
+                        },
+                        tooltipClass: 'small'
+                    });
                 });
             });
         });

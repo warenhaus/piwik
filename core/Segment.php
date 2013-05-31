@@ -23,17 +23,33 @@ class Piwik_Segment
     /**
      * Truncate the Segments to 4k
      */
-    const SEGMENT_TRUNCATE_LIMIT = 4096;
+    const SEGMENT_TRUNCATE_LIMIT = 8192;
 
     public function __construct($string, $idSites)
     {
-        $string = Piwik_Common::unsanitizeInputValue($string);
         $string = trim($string);
         if (!Piwik_Archive::isSegmentationEnabled()
             && !empty($string)
         ) {
             throw new Exception("The Super User has disabled the Segmentation feature.");
         }
+
+        // First try with url decoded value. If that fails, try with raw value.
+        // If that also fails, it will throw the exception
+        try {
+            $this->initializeSegment( urldecode($string), $idSites);
+        } catch(Exception $e) {
+            $this->initializeSegment($string, $idSites);
+        }
+    }
+
+    /**
+     * @param $string
+     * @param $idSites
+     * @throws Exception
+     */
+    protected function initializeSegment($string, $idSites)
+    {
         // As a preventive measure, we restrict the filter size to a safe limit
         $string = substr($string, 0, self::SEGMENT_TRUNCATE_LIMIT);
 
@@ -58,11 +74,6 @@ class Piwik_Segment
         $segment->setSubExpressionsAfterCleanup($cleanedExpressions);
     }
 
-    public function getPrettyString()
-    {
-        //@TODO segment.getPrettyString
-    }
-
     public function isEmpty()
     {
         return empty($this->string);
@@ -70,16 +81,6 @@ class Piwik_Segment
 
     protected $availableSegments = array();
     protected $segmentsHumanReadable = '';
-
-    private function getUniqueSqlFields()
-    {
-        $expressions = $this->segment->parsedSubExpressions;
-        $uniqueFields = array();
-        foreach ($expressions as $expression) {
-            $uniqueFields[] = $expression[Piwik_SegmentExpression::INDEX_OPERAND][0];
-        }
-        return $uniqueFields;
-    }
 
     protected function getCleanedExpression($expression)
     {
@@ -106,15 +107,13 @@ class Piwik_Segment
                 throw new Exception("You do not have enough permission to access the segment " . $name);
             }
 
-//            $this->segmentsHumanReadable[] = $segment['name'] . " " .
-//                                            $this->getNameForMatchType($matchType) .
-//                                            $value;
-
             // apply presentation filter
             if (isset($segment['sqlFilter'])
                 && !empty($segment['sqlFilter'])
+                && $matchType != Piwik_SegmentExpression::MATCH_IS_NOT_NULL_NOR_EMPTY
+                && $matchType != Piwik_SegmentExpression::MATCH_IS_NULL_OR_EMPTY
             ) {
-                $value = call_user_func($segment['sqlFilter'], $value, $segment['sqlSegment'], $matchType);
+                $value = call_user_func($segment['sqlFilter'], $value, $segment['sqlSegment'], $matchType, $name);
 
                 // sqlFilter-callbacks might return arrays for more complex cases
                 // e.g. see Piwik_Actions::getIdActionFromSegment()
@@ -145,7 +144,9 @@ class Piwik_Segment
         if (empty($this->string)) {
             return '';
         }
-        return md5($this->string);
+        // normalize the string as browsers may send slightly different payloads for the same archive
+        $normalizedSegmentString = urldecode($this->string);
+        return md5($normalizedSegmentString);
     }
 
 
@@ -199,7 +200,6 @@ class Piwik_Segment
         } else {
             $sql = $this->buildSelectQuery($select, $from, $where, $orderBy, $groupBy);
         }
-
         return array(
             'sql'  => $sql,
             'bind' => $bind

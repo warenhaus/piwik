@@ -201,7 +201,18 @@ class Piwik_Goals_Controller extends Piwik_Controller
     public function index()
     {
         $view = $this->getOverviewView();
-        $view->goalsJSON = Piwik_Common::json_encode($this->goals);
+        
+        // unsanitize goal names and other text data (not done in API so as not to break
+        // any other code/cause security issues)
+        $goals = $this->goals;
+        foreach ($goals as &$goal) {
+            $goal['name'] = Piwik_Common::unsanitizeInputValue($goal['name']);
+            if (isset($goal['pattern'])) {
+                $goal['pattern'] = Piwik_Common::unsanitizeInputValue($goal['pattern']);
+            }
+        }
+        $view->goalsJSON = Piwik_Common::json_encode($goals);
+        
         $view->userCanEditGoals = Piwik::isUserHasAdminAccess($this->idSite);
         $view->ecommerceEnabled = $this->site->isEcommerceEnabled();
         $view->displayFullReport = true;
@@ -510,8 +521,7 @@ class Piwik_Goals_Controller extends Piwik_Controller
 
         if ($conversions > 0) {
             // for non-Goals reports, we show the goals table
-            $customParams = $ecommerceCustomParams
-                + array('viewDataTable' => 'tableGoals', 'documentationForGoalsPage' => '1');
+            $customParams = $ecommerceCustomParams + array('documentationForGoalsPage' => '1');
 
             if (Piwik_Common::getRequestVar('idGoal', '') === '') // if no idGoal, use 0 for overview
             {
@@ -522,6 +532,11 @@ class Piwik_Goals_Controller extends Piwik_Controller
             foreach ($allReports as $category => $reports) {
                 $categoryText = Piwik_Translate('Goals_ViewGoalsBy', $category);
                 foreach ($reports as $report) {
+                    $customParams['viewDataTable'] = 'tableGoals';
+                    if(in_array($report['action'], array('getVisitsUntilConversion', 'getDaysToConversion'))) {
+                        $customParams['viewDataTable'] = 'table';
+                    }
+
                     $goalReportsByDimension->addReport(
                         $categoryText, $report['name'], $report['module'] . '.' . $report['action'], $customParams);
                 }

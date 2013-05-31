@@ -8,7 +8,7 @@
             <div title="{$visitor.actionDetails|@count} {'Live_Actions'|translate}" class="datetime">
                 <span style='display:none' class='serverTimestamp'>{$visitor.serverTimestamp}</span>
                 {$visitor.serverDatePretty} - {$visitor.serverTimePretty} {if $visitor.visitDuration > 0}<i>({$visitor.visitDurationPretty})</i>{/if}
-                &nbsp;<img src="{$visitor.countryFlag}" title="{$visitor.location|escape:'html'}, {'Provider_ColumnProvider'|translate} {$visitor.provider}"/>
+                &nbsp;<img src="{$visitor.countryFlag}" title="{$visitor.location|escape:'html'}, {'Provider_ColumnProvider'|translate} {$visitor.providerName}"/>
                 &nbsp;<img src="{$visitor.browserIcon}" title="{$visitor.browserName}, {'UserSettings_Plugins'|translate}: {$visitor.plugins}"/>
                 &nbsp;<img src="{$visitor.operatingSystemIcon}" title="{$visitor.operatingSystem}, {$visitor.resolution}"/>
                 &nbsp;
@@ -73,7 +73,7 @@
                                          title="{$action.url|escape:'html'} - {$action.serverTimePretty|escape:'html'}"/>
                                 {elseif $action.type == 'search'}
                                     <img class='iconPadding' src="{$action.icon}"
-                                         title="{'Actions_SubmenuSitesearch'|translate|escape:'html'}: {$action.pageTitle|escape:'html'} - {$action.serverTimePretty|escape:'html'}"/>
+                                         title="{'Actions_SubmenuSitesearch'|translate|escape:'html'}: {$action.siteSearchKeyword|escape:'html'} - {$action.serverTimePretty|escape:'html'}"/>
                                 {else}
                                     <img class='iconPadding' src="{$action.icon}"
                                          title="{$action.goalName|escape:'html'} - {if $action.revenue > 0}{'Live_GoalRevenue'|translate}: {$action.revenue|money:$idSite} - {/if} {$action.serverTimePretty|escape:'html'}"/>

@@ -623,6 +623,10 @@ class Core_CommonTest extends PHPUnit_Framework_TestCase
             array('http://www.baidu.com/s?wd=%C1%F7%D0%D0%C3%C0%D3%EF%CF%C2%D4%D8',
                   array('name' => 'Baidu', 'keywords' => '流行美语下载')),
 
+            // Sogou
+            array('http://www.sogou.com/web?query=%C6%F3%D2%B5%CD%C6%B9%E3&_asf=www.sogou.com&_ast=1365135191&w=01019900&p=40040100&sut=559&sst0=1365135191315',
+                  array('name' => 'Sogou', 'keywords' => '企业推广')),
+
             // baidu utf-8
             array('http://www.baidu.com/s?ch=14&ie=utf-8&wd=%E4%BA%8C%E5%BA%A6%E5%AE%AB%E9%A2%88%E7%B3%9C%E7%83%82%E8%83%BD%E6%B2%BB%E5%A5%BD%E5%90%97%3F&searchRadio=on',
                   array('name' => 'Baidu', 'keywords' => '二度宫颈糜烂能治好吗?')),
@@ -813,6 +817,16 @@ class Core_CommonTest extends PHPUnit_Framework_TestCase
 
             array('http://search.naver.com/search.naver?where=nexearch&query=FAU+&x=0&y=0&sm=top_hty&fbm=1&ie=utf8',
                   array('name' => 'Naver', 'keywords' => 'fau')),
+
+            // Korean search engines
+            array('http://search.naver.com/search.naver?where=nexearch&query=++%EA%B2%80%EC%83%89+++%EC%A7%88%EB%AC%B8%ED%98%95+%EA%B2%80%EC%83%89%EC%96%B4+%EA%B2%B0%ED%98%BC+%ED%9B%84+%EA%B1%B1%EC%A0%95+1%EC%9C%84&sm=top_hty&fbm=1&ie=utf8',
+                  array('name' => 'Naver', 'keywords' => '검색   질문형 검색어 결혼 후 걱정 1위')),
+
+            array('http://search.nate.com/search/all.html?thr=sbus&q=%B0%CB%BB%F6+++%C1%FA%B9%AE%C7%FC+%B0%CB%BB%F6%BE%EE+%B0%E1%C8%A5+%C8%C4+%B0%C6%C1%A4+1%C0%A7',
+                  array('name' => 'Nate', 'keywords' => '검색   질문형 검색어 결혼 후 걱정 1위')),
+
+            array('http://search.daum.net/search?w=tot&DA=UMEF&t__nil_searchbox=suggest&sug=&q=%EA%B2%80%EC%83%89+++%EC%A7%88%EB%AC%B8%ED%98%95+%EA%B2%80%EC%83%89%EC%96%B4+%EA%B2%B0%ED%98%BC+%ED%9B%84+%EA%B1%B1%EC%A0%95+1%EC%9C%84',
+                    array('name' => 'Daum', 'keywords' => '검색   질문형 검색어 결혼 후 걱정 1위')),
 
             // DDG
             array('http://duckduckgo.com/post.html',

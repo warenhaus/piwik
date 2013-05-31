@@ -69,6 +69,8 @@
 		<siteCurrencySymbol>$</siteCurrencySymbol>
 		
 		<visitLocalTime>12:34:06</visitLocalTime>
+		<visitLocalHour>12</visitLocalHour>
+		
 		
 		
 		
@@ -84,11 +86,13 @@
 		<countryCode>fr</countryCode>
 		<countryFlag>plugins/UserCountry/flags/fr.png</countryFlag>
 		<region />
+		<regionCode />
 		<city />
 		<location>France</location>
 		<latitude />
 		<longitude />
 		<provider>Unknown</provider>
+		<providerName>Unknown</providerName>
 		<providerUrl>http://piwik.org/faq/general/#faq_52</providerUrl>
 		<referrerType>direct</referrerType>
 		<referrerTypeName>Direct Entry</referrerTypeName>
@@ -99,13 +103,17 @@
 		<referrerSearchEngineUrl />
 		<referrerSearchEngineIcon />
 		<operatingSystem>Windows XP</operatingSystem>
+		<operatingSystemCode>WXP</operatingSystemCode>
 		<operatingSystemShortName>Win XP</operatingSystemShortName>
 		<operatingSystemIcon>plugins/UserSettings/images/os/WXP.gif</operatingSystemIcon>
 		<browserFamily>gecko</browserFamily>
 		<browserFamilyDescription>Gecko (Firefox)</browserFamilyDescription>
 		<browserName>Firefox 3.6</browserName>
 		<browserIcon>plugins/UserSettings/images/browsers/FF.gif</browserIcon>
+		<browserCode>FF</browserCode>
+		<browserVersion>3.6</browserVersion>
 		<screenType>normal</screenType>
+		<deviceType>desktop</deviceType>
 		<resolution>1024x768</resolution>
 		<screenTypeIcon>plugins/UserSettings/images/screens/normal.gif</screenTypeIcon>
 		<plugins>flash, java</plugins>
@@ -148,20 +156,20 @@
 				
 				<customVariables>
 					<row>
-						<customVariableName2>_pkp</customVariableName2>
-						<customVariableValue2>999</customVariableValue2>
+						<customVariablePageName2>_pkp</customVariablePageName2>
+						<customVariablePageValue2>999</customVariablePageValue2>
 					</row>
 					<row>
-						<customVariableName3>_pks</customVariableName3>
-						<customVariableValue3>SKU VERY nice indeed</customVariableValue3>
+						<customVariablePageName3>_pks</customVariablePageName3>
+						<customVariablePageValue3>SKU VERY nice indeed</customVariablePageValue3>
 					</row>
 					<row>
-						<customVariableName4>_pkn</customVariableName4>
-						<customVariableValue4>PRODUCT THREE LEFT in cart</customVariableValue4>
+						<customVariablePageName4>_pkn</customVariablePageName4>
+						<customVariablePageValue4>PRODUCT THREE LEFT in cart</customVariablePageValue4>
 					</row>
 					<row>
-						<customVariableName5>_pkc</customVariableName5>
-						<customVariableValue5 />
+						<customVariablePageName5>_pkc</customVariablePageName5>
+						<customVariablePageValue5 />
 					</row>
 				</customVariables>
 				<timeSpent>180</timeSpent>
@@ -177,20 +185,20 @@
 				
 				<customVariables>
 					<row>
-						<customVariableName2>_pkp</customVariableName2>
-						<customVariableValue2>333</customVariableValue2>
+						<customVariablePageName2>_pkp</customVariablePageName2>
+						<customVariablePageValue2>333</customVariablePageValue2>
 					</row>
 					<row>
-						<customVariableName3>_pks</customVariableName3>
-						<customVariableValue3>SKU VERY nice indeed</customVariableValue3>
+						<customVariablePageName3>_pks</customVariablePageName3>
+						<customVariablePageValue3>SKU VERY nice indeed</customVariablePageValue3>
 					</row>
 					<row>
-						<customVariableName4>_pkn</customVariableName4>
-						<customVariableValue4>PRODUCT THREE LEFT in cart</customVariableValue4>
+						<customVariablePageName4>_pkn</customVariablePageName4>
+						<customVariablePageValue4>PRODUCT THREE LEFT in cart</customVariablePageValue4>
 					</row>
 					<row>
-						<customVariableName5>_pkc</customVariableName5>
-						<customVariableValue5 />
+						<customVariablePageName5>_pkc</customVariablePageName5>
+						<customVariablePageValue5 />
 					</row>
 				</customVariables>
 				<timeSpent>180</timeSpent>
@@ -206,16 +214,16 @@
 				
 				<customVariables>
 					<row>
-						<customVariableName3>_pks</customVariableName3>
-						<customVariableValue3>SKU IN ABANDONED CART TWO</customVariableValue3>
+						<customVariablePageName3>_pks</customVariablePageName3>
+						<customVariablePageValue3>SKU IN ABANDONED CART TWO</customVariablePageValue3>
 					</row>
 					<row>
-						<customVariableName4>_pkn</customVariableName4>
-						<customVariableValue4>PRODUCT TWO LEFT in cart</customVariableValue4>
+						<customVariablePageName4>_pkn</customVariablePageName4>
+						<customVariablePageValue4>PRODUCT TWO LEFT in cart</customVariablePageValue4>
 					</row>
 					<row>
-						<customVariableName5>_pkc</customVariableName5>
-						<customVariableValue5>Category TWO LEFT in cart</customVariableValue5>
+						<customVariablePageName5>_pkc</customVariablePageName5>
+						<customVariablePageValue5>Category TWO LEFT in cart</customVariablePageValue5>
 					</row>
 				</customVariables>
 				<icon />
@@ -270,6 +278,8 @@
 		<siteCurrencySymbol>$</siteCurrencySymbol>
 		
 		<visitLocalTime>12:34:06</visitLocalTime>
+		<visitLocalHour>12</visitLocalHour>
+		
 		
 		
 		
@@ -285,11 +295,13 @@
 		<countryCode>fr</countryCode>
 		<countryFlag>plugins/UserCountry/flags/fr.png</countryFlag>
 		<region />
+		<regionCode />
 		<city />
 		<location>France</location>
 		<latitude />
 		<longitude />
 		<provider>Unknown</provider>
+		<providerName>Unknown</providerName>
 		<providerUrl>http://piwik.org/faq/general/#faq_52</providerUrl>
 		<referrerType>direct</referrerType>
 		<referrerTypeName>Direct Entry</referrerTypeName>
@@ -300,13 +312,17 @@
 		<referrerSearchEngineUrl />
 		<referrerSearchEngineIcon />
 		<operatingSystem>Windows XP</operatingSystem>
+		<operatingSystemCode>WXP</operatingSystemCode>
 		<operatingSystemShortName>Win XP</operatingSystemShortName>
 		<operatingSystemIcon>plugins/UserSettings/images/os/WXP.gif</operatingSystemIcon>
 		<browserFamily>gecko</browserFamily>
 		<browserFamilyDescription>Gecko (Firefox)</browserFamilyDescription>
 		<browserName>Firefox 3.6</browserName>
 		<browserIcon>plugins/UserSettings/images/browsers/FF.gif</browserIcon>
+		<browserCode>FF</browserCode>
+		<browserVersion>3.6</browserVersion>
 		<screenType>normal</screenType>
+		<deviceType>desktop</deviceType>
 		<resolution>1024x768</resolution>
 		<screenTypeIcon>plugins/UserSettings/images/screens/normal.gif</screenTypeIcon>
 		<plugins>flash, java</plugins>

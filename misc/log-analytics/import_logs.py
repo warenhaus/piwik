@@ -179,6 +179,9 @@ _S3_LOG_FORMAT = (
     '\S+ \S+ \S+ \S+ "\S+ (?P<path>.*?) \S+" (?P<status>\S+) \S+ (?P<length>\S+) '
     '\S+ \S+ \S+ "(?P<referrer>.*?)" "(?P<user_agent>.*?)"'
 )
+_ICECAST2_LOG_FORMAT = ( _NCSA_EXTENDED_LOG_FORMAT +
+    ' (?P<session_time>\S+)'
+)
 
 FORMATS = {
     'common': RegexFormat('common', _COMMON_LOG_FORMAT),
@@ -187,6 +190,7 @@ FORMATS = {
     'common_complete': RegexFormat('common_complete', _HOST_PREFIX + _NCSA_EXTENDED_LOG_FORMAT),
     'iis': IisFormat(),
     's3': RegexFormat('s3', _S3_LOG_FORMAT),
+    'icecast2': RegexFormat('icecast2', _ICECAST2_LOG_FORMAT),
 }
 
 
@@ -398,6 +402,11 @@ class Configuration(object):
             '--invalidate-dates', dest='invalidate_dates', default=None,
             help="Invalidate reports for the specified dates (format: YYYY-MM-DD,YYYY-MM-DD,...). "
                  "By default, all dates found in the logs will be invalidated.",
+        )
+        option_parser.add_option(
+            '--force-lowercase-path', dest='force_lowercase_path', default=False, action='store_true',
+            help="Make URL path lowercase so paths with the same letters but different cases are "
+                 "treated the same."
         )
         return option_parser
 
@@ -1147,14 +1156,14 @@ class Recorder(object):
             args['_cvar'] = '{"1":["Not-Bot","%s"]}' % hit.user_agent
             args['bots'] = '1'
         if hit.is_error or hit.is_redirect:
-            args['_cvar'] = '{"2":["HTTP-code","%s"]}' % hit.status
+            args['cvar'] = '{"1":["HTTP-code","%s"]}' % hit.status
             args['action_name'] = '%s/URL = %s%s' % (
                 hit.status,
                 urllib.quote(args['url'], ''),
                 ("/From = %s" % urllib.quote(args['urlref'], '') if args['urlref'] != ''  else '')
             )
         if hit.generation_time_milli > 0:
-            args['generation_time_ms'] = hit.generation_time_milli
+            args['gt_ms'] = hit.generation_time_milli
         return args
 
     def _record_hits(self, hits):
@@ -1225,6 +1234,9 @@ class Hit(object):
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
         super(Hit, self).__init__()
+        
+        if config.options.force_lowercase_path:
+            self.full_path = self.full_path.lower()
 
 
 class Parser(object):

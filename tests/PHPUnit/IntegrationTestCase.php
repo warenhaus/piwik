@@ -54,6 +54,41 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @param $createEmptyDatabase
+     */
+    protected static function installAndLoadPlugins($installPlugins)
+    {
+        $pluginsManager = Piwik_PluginsManager::getInstance();
+        $plugins = $pluginsManager->readPluginsDirectory();
+
+        $pluginsManager->loadPlugins($plugins);
+        if ($installPlugins)
+        {
+            $pluginsManager->installLoadedPlugins();
+        }
+    }
+
+    public static function loadAllPlugins()
+    {
+        $pluginsManager = Piwik_PluginsManager::getInstance();
+        $pluginsToLoad = Piwik_Config::getInstance()->Plugins['Plugins'];
+        $pluginsToLoad[] = 'DevicesDetection';
+        $pluginsManager->loadPlugins($pluginsToLoad);
+    }
+
+    public static function unloadAllPlugins()
+    {
+        try {
+            $plugins = Piwik_PluginsManager::getInstance()->getLoadedPlugins();
+            foreach ($plugins AS $plugin) {
+                $plugin->uninstall();
+            }
+            Piwik_PluginsManager::getInstance()->unloadPlugins();
+        } catch (Exception $e) {
+        }
+    }
+
     protected static function setupFixture($fixture)
     {
         try {
@@ -77,7 +112,7 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
      * setupBeforeClass' implementation. Can be called by derived classes in case
      * they need to do some custom setup procedure.
      */
-    public static function _setUpBeforeClass($dbName = false, $createEmptyDatabase = true, $createConfig = true)
+    public static function _setUpBeforeClass($dbName = false, $createEmptyDatabase = true, $createConfig = true, $installPlugins = null)
     {
         try {
             Piwik::$piwikUrlCache = '';
@@ -106,7 +141,6 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
             Piwik::createLogObject();
 
             Piwik_PluginsManager::getInstance()->loadPlugins(array());
-
         } catch (Exception $e) {
             self::fail("TEST INITIALIZATION FAILED: " . $e->getMessage());
         }
@@ -123,23 +157,17 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
 
         // We need to be SU to create websites for tests
         Piwik::setUserIsSuperUser();
+
         Piwik_Tracker_Cache::deleteTrackerCache();
+        if ($installPlugins === null) $installPlugins = $createEmptyDatabase;
+        self::installAndLoadPlugins( $installPlugins);
 
-        // Load and install plugins
-        $pluginsManager = Piwik_PluginsManager::getInstance();
-        $plugins = $pluginsManager->readPluginsDirectory();
-
-        $pluginsManager->loadPlugins($plugins);
-        if ($createEmptyDatabase) // only install if database is empty
-        {
-            $pluginsManager->installLoadedPlugins();
-        }
 
         $_GET = $_REQUEST = array();
         $_SERVER['HTTP_REFERER'] = '';
 
         // Make sure translations are loaded to check messages in English
-        Piwik_Translate::getInstance()->loadEnglishTranslation();
+        Piwik_Translate::getInstance()->reloadLanguage('en');
         Piwik_LanguagesManager_API::getInstance()->setLanguageForUser('superUserLogin', 'en');
 
         // List of Modules, or Module.Method that should not be called as part of the XML output compare
@@ -150,6 +178,8 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
         if (class_exists('Piwik_SEO')) {
             Piwik_SEO::$customRankCheckerClassName = 'MockSEORankChecker';
         }
+
+        FakeAccess::$superUserLogin = 'superUserLogin';
     }
 
     public static function tearDownAfterClass()
@@ -160,17 +190,19 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
     public static function _tearDownAfterClass($dropDatabase = true)
     {
         Piwik::$piwikUrlCache = null;
-
-        try {
-            $plugins = Piwik_PluginsManager::getInstance()->getLoadedPlugins();
-            foreach ($plugins AS $plugin) {
-                if ($dropDatabase) {
+        IntegrationTestCase::unloadAllPlugins();
+/*
+        $plugins = Piwik_PluginsManager::getInstance()->getLoadedPlugins();
+        foreach ($plugins AS $plugin) {
+            if ($dropDatabase) {
+                try {
                     $plugin->uninstall();
+                } catch(Exception $e) {
+                    echo "\n There was an error uninstalling a plugin: " . $e->getMessage() . "\n";
                 }
             }
-            Piwik_PluginsManager::getInstance()->unloadPlugins();
-        } catch (Exception $e) {
         }
+        Piwik_PluginsManager::getInstance()->unloadPlugins();*/
         if ($dropDatabase) {
             Piwik::dropDatabase();
         }
@@ -208,6 +240,7 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
     public static $defaultApiNotToCall = array(
         'LanguagesManager',
         'DBStats',
+        'Dashboard',
         'UsersManager',
         'SitesManager',
         'ExampleUI',
@@ -221,7 +254,9 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
         'API',
         'ImageGraph',
         'Annotations',
+        'SegmentEditor',
         'UserCountry.getLocationFromIP',
+        'Dashboard'
     );
 
     const DEFAULT_USER_PASSWORD = 'nopass';
@@ -272,8 +307,8 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
                 'Do take note that scheduled reports are not being tested with images. ' .
                     'If images contained in scheduled reports have been altered, tests will fail on the Piwik QA Server. ' .
                     'To include images in the test suite, please use a machine with the following specifications : ' .
-                    'OS = Linux precise32, PHP Version = 5.3.10 and GD Version = 2.0' .
-                    "\n Ignore this message if you're running on your dev machine, but pay attention when it comes from Jenkins."
+                    'OS = '.Test_Piwik_BaseFixture::IMAGES_GENERATED_ONLY_FOR_OS.', Minimum PHP Version = '.Test_Piwik_BaseFixture::IMAGES_GENERATED_FOR_PHP.' and GD Version = ' . Test_Piwik_BaseFixture::IMAGES_GENERATED_FOR_GD
+                    . "\n Ignore this message if you're running on your dev machine, but pay attention when it comes from the CI server."
 
             );
         }
@@ -312,12 +347,10 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
             )
         );
 
-        // This particular PDF file looks different on recent PHP
-        // Differences with expected in: tests/PHPUnit/Integration/processed/test_ecommerceOrderWithItems_scheduled_report_in_pdf_tables_only__PDFReports.generateReport_week.original.pdf
-        // Failed asserting that 486675 matches expected 486668.
-        // So we disable this test for 5.4 and 5.5
-        if (stristr(phpversion(), '5.4') === false && stristr(phpversion(), '5.5') === false) {
+        // We run this particular test on one PHP version only (which should run on Travis CI + Most devs)
+        if (stristr(phpversion(), '5.4') !== false) {
             // PDF Scheduled Report
+            // tests/PHPUnit/Integration/processed/test_ecommerceOrderWithItems_scheduled_report_in_pdf_tables_only__PDFReports.generateReport_week.original.pdf
             array_push(
                 $apiCalls,
                 array(
@@ -396,6 +429,25 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
                      )
                 )
             );
+
+            // mail report with one row evolution based png graph
+            array_push(
+                $apiCalls,
+                array(
+                     'PDFReports.generateReport',
+                     array(
+                         'testSuffix'             => '_scheduled_report_in_html_row_evolution_graph',
+                         'date'                   => $dateTime,
+                         'periods'                => array($period),
+                         'format'                 => 'original',
+                         'fileExtension'          => 'html',
+                         'otherRequestParameters' => array(
+                             'idReport'     => 5,
+                             'outputType'   => Piwik_PDFReports_API::OUTPUT_RETURN
+                         )
+                     )
+                )
+            );
         }
 
         return $apiCalls;
@@ -418,7 +470,7 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
      * @throws Exception
      * @return array of API URLs query strings
      */
-    protected function generateUrlsApi($parametersToSet, $formats, $periods, $supertableApi = false, $setDateLastN = false, $language = false, $segment = false, $fileExtension = false)
+    protected function generateUrlsApi($parametersToSet, $formats, $periods, $supertableApi = false, $setDateLastN = false, $language = false, $fileExtension = false)
     {
         // Get the URLs to query against the API for all functions starting with get*
         $skipped = $requestUrls = array();
@@ -609,13 +661,13 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
             $parametersToSet['apiAction'] = $apiAction;
         }
         if (!empty($segment)) {
-            $parametersToSet['segment'] = $segment;
+            $parametersToSet['segment'] = urlencode($segment);
         }
         if ($idGoal !== false) {
             $parametersToSet['idGoal'] = $idGoal;
         }
 
-        $requestUrls = $this->generateUrlsApi($parametersToSet, $formats, $periods, $supertableApi, $setDateLastN, $language, $segment, $fileExtension);
+        $requestUrls = $this->generateUrlsApi($parametersToSet, $formats, $periods, $supertableApi, $setDateLastN, $language, $fileExtension);
 
         $this->checkEnoughUrlsAreTested($requestUrls);
 
@@ -638,7 +690,11 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
 
     protected function _testApiUrl($testName, $apiId, $requestUrl)
     {
-        $isLiveMustDeleteDates = strpos($requestUrl, 'Live.getLastVisits') !== false;
+        $isTestLogImportReverseChronological = strpos($testName, 'ImportedInRandomOrderTest') === false;
+        $isLiveMustDeleteDates = strpos($requestUrl, 'Live.getLastVisits') !== false
+                                // except for that particular test that we care about dates!
+                                && $isTestLogImportReverseChronological;
+
         $request = new Piwik_API_Request($requestUrl);
         $dateTime = Piwik_Common::getRequestVar('date', '', 'string', Piwik_Common::getArrayFromQueryString($requestUrl));
 
@@ -688,12 +744,19 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
                 $expected = $this->removePrettyDateFromXml($expected);
                 $response = $this->removePrettyDateFromXml($response);
             }
-            // avoid build failure when running just before midnight, generating visits in the future
-            $expected = $this->removeXmlElement($expected, 'sum_daily_nb_uniq_visitors');
-            $response = $this->removeXmlElement($response, 'sum_daily_nb_uniq_visitors');
-            $expected = $this->removeXmlElement($expected, 'nb_visits_converted');
-            $response = $this->removeXmlElement($response, 'nb_visits_converted');
 
+            // avoid build failure when running just before midnight, generating visits in the future
+            // Note: disabled when 'segment' is a hack:
+            //       instead we should only remove these fields for the specific test that was failing.
+            if(strpos($requestUrl, 'segment') === false) {
+                $expected = $this->removeXmlElement($expected, 'sum_daily_nb_uniq_visitors');
+                $response = $this->removeXmlElement($response, 'sum_daily_nb_uniq_visitors');
+                $expected = $this->removeXmlElement($expected, 'nb_visits_converted');
+                $response = $this->removeXmlElement($response, 'nb_visits_converted');
+            }
+
+            $expected = $this->removeXmlElement($expected, 'visitServerHour');
+            $response = $this->removeXmlElement($response, 'visitServerHour');
 
             if (strpos($requestUrl, 'date=') !== false) {
                 $regex = "/date=[-0-9,%Ca-z]+/"; // need to remove %2C which is encoded ,
@@ -753,7 +816,8 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
             'serverTimePrettyFirstAction',
             'goalTimePretty',
             'serverTimePretty',
-            'visitorId'
+            'visitorId',
+            'visitServerHour',
         );
         foreach ($toRemove as $xml) {
             $input = $this->removeXmlElement($input, $xml);
@@ -909,7 +973,7 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
             isset($params['format']) ? $params['format'] : 'xml',
             isset($params['idSite']) ? $params['idSite'] : false,
             isset($params['date']) ? $params['date'] : false,
-            isset($params['periods']) ? $params['periods'] : false,
+            isset($params['periods']) ? $params['periods'] : (isset($params['period']) ? $params['period'] : false),
             isset($params['setDateLastN']) ? $params['setDateLastN'] : false,
             isset($params['language']) ? $params['language'] : false,
             isset($params['segment']) ? $params['segment'] : false,
@@ -1055,4 +1119,5 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
 
         Piwik_TablePartitioning::$tablesAlreadyInstalled = Piwik::getTablesInstalled($forceReload = true);
     }
+
 }

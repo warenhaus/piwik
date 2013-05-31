@@ -15,6 +15,12 @@ class Test_Piwik_Fixture_ManyVisitsWithMockLocationProvider extends Test_Piwik_B
 {
     public $idSite = 1;
     public $dateTime = '2010-01-03 01:22:33';
+    public $nextDay = null;
+
+    public function __construct()
+    {
+        $this->nextDay = Piwik_Date::factory($this->dateTime)->addDay(1)->getDatetime();
+    }
 
     public function setUp()
     {
@@ -107,6 +113,9 @@ class Test_Piwik_Fixture_ManyVisitsWithMockLocationProvider extends Test_Piwik_B
 
         // track outlinks
         $this->trackActions($t, $visitorCounter, 'outlink', $userAgents, $resolutions);
+        
+        // track ecommerce product orders
+        $this->trackOrders($t);
     }
 
     private function trackActions($t, &$visitorCounter, $actionType, $userAgents, $resolutions,
@@ -159,6 +168,21 @@ class Test_Piwik_Fixture_ManyVisitsWithMockLocationProvider extends Test_Piwik_B
             }
         }
     }
+    
+    private function trackOrders($t)
+    {
+        $nextDay = Piwik_Date::factory($this->nextDay);
+        $t->setForceVisitDateTime($nextDay);
+        
+        for ($i = 0; $i != 25; ++$i) {
+            $cat = $i % 5;
+            
+            $t->setNewVisitorId();
+            $t->setIp("155.5.4.$i");
+            $t->setEcommerceView("id_book$i",  "Book$i", "Books Cat #$cat", 7.50);
+            self::checkResponse($t->doTrackPageView('bought book'));
+        }
+    }
 
     private function trackAction($t, $actionType, $visitorCounter, $actionNum)
     {
@@ -180,11 +204,11 @@ class Test_Piwik_Fixture_ManyVisitsWithMockLocationProvider extends Test_Piwik_B
     {
         Piwik_UserCountry_LocationProvider::setCurrentProvider('mock_provider');
         MockLocationProvider::$locations = array(
-            self::makeLocation('Toronto', 'ON', 'CA'),
+            self::makeLocation('Toronto', 'ON', 'CA', $lat = null, $long = null, $isp = 'comcast.net'),
 
-            self::makeLocation('Nice', 'B8', 'FR'),
+            self::makeLocation('Nice', 'B8', 'FR', $lat = null, $long = null, $isp = 'comcast.net'),
 
-            self::makeLocation('Melbourne', '07', 'AU'),
+            self::makeLocation('Melbourne', '07', 'AU', $lat = null, $long = null, $isp = 'awesomeisp.com'),
 
             self::makeLocation('Yokohama', '19', 'JP'),
         );

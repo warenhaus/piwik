@@ -181,6 +181,7 @@ if (!isset($GLOBALS['Piwik_SearchEngines'])) {
         'www.search-results.com'         => array('Ask'),
         'int.search-results.com'         => array('Ask'),
         '{}.search-results.com'          => array('Ask'),
+        'search.ask.com'                 => array('Ask'),
         '{}.search.ask.com'              => array('Ask'),
         'avira-int.ask.com'              => array('Ask'),
 
@@ -270,7 +271,7 @@ if (!isset($GLOBALS['Piwik_SearchEngines'])) {
         'www1.dastelefonbuch.de'         => array('DasTelefonbuch', 'kw'),
 
         // Daum
-        'search.daum.net'                => array('Daum', 'q', 'search?q={k}', 'EUC-KR'),
+        'search.daum.net'                => array('Daum', 'q', 'search?q={k}'),
 
         // Delfi Latvia
         'smart.delfi.lv'                 => array('Delfi lv', 'q', 'find?q={k}'),
@@ -665,7 +666,7 @@ if (!isset($GLOBALS['Piwik_SearchEngines'])) {
         'search.nate.com'                => array('Nate', 'q', 'search/all.html?q={k}', 'EUC-KR'),
 
         // Naver
-        'search.naver.com'               => array('Naver', 'query', 'search.naver?query={k}', 'EUC-KR'),
+        'search.naver.com'               => array('Naver', 'query', 'search.naver?query={k}'),
 
         // Needtofind
         'ko.search.need2find.com'        => array('Needtofind', 'searchfor', 'search/AJmain.jhtml?searchfor={k}'),
@@ -769,7 +770,7 @@ if (!isset($GLOBALS['Piwik_SearchEngines'])) {
         'www.skynet.be'                  => array('Skynet', 'q', 'services/recherche/google?q={k}'),
 
         // Sogou
-        'www.sogou.com'                  => array('Sogou', 'query', 'web?query={k}'),
+        'www.sogou.com'                  => array('Sogou', 'query', 'web?query={k}', 'gb2312'),
 
         // Softonic
         'search.softonic.com'            => array('Softonic', 'q', 'default/default?q={k}'),

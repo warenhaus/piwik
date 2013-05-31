@@ -309,7 +309,7 @@ class Piwik_Actions_API
     }
 
     //Visitors can search, and then click "next" to view more results. This is the average number of search results pages viewed for this keyword.
-    public function addPagesPerSearchColumn($dataTable, $columnToRead = 'nb_hits')
+    protected function addPagesPerSearchColumn($dataTable, $columnToRead = 'nb_hits')
     {
         $dataTable->filter('ColumnCallbackAddColumnQuotient', array('nb_pages_per_search', $columnToRead, 'nb_visits', $precision = 1));
     }
@@ -505,7 +505,13 @@ class Piwik_Actions_API
         } else {
             // No generation time: remove it from the API output and add it to empty_columns metadata, so that
             // the columns can also be removed from the view
-            $dataTable->filter('ColumnDelete', array(array(Piwik_Archive::INDEX_PAGE_SUM_TIME_GENERATION, Piwik_Archive::INDEX_PAGE_NB_HITS_WITH_TIME_GENERATION)));
+            $dataTable->filter('ColumnDelete', array(array(
+                Piwik_Archive::INDEX_PAGE_SUM_TIME_GENERATION,
+                Piwik_Archive::INDEX_PAGE_NB_HITS_WITH_TIME_GENERATION,
+                Piwik_Archive::INDEX_PAGE_MIN_TIME_GENERATION,
+                Piwik_Archive::INDEX_PAGE_MAX_TIME_GENERATION
+            )));
+            
             if ($dataTable instanceof Piwik_DataTable) {
                 $emptyColumns = $dataTable->getMetadata(Piwik_DataTable::EMPTY_COLUMNS_METADATA_NAME);
                 if (!is_array($emptyColumns)) {
@@ -513,6 +519,8 @@ class Piwik_Actions_API
                 }
                 $emptyColumns[] = 'sum_time_generation';
                 $emptyColumns[] = 'avg_time_generation';
+                $emptyColumns[] = 'min_time_generation';
+                $emptyColumns[] = 'max_time_generation';
                 $dataTable->setMetadata(Piwik_DataTable::EMPTY_COLUMNS_METADATA_NAME, $emptyColumns);
             }
         }

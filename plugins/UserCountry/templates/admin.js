@@ -68,7 +68,6 @@ $(document).ready(function () {
         var data = {
             module: 'UserCountry',
             action: action,
-            token_auth: piwik.token_auth,
             'continue': cont ? 1 : 0
         };
         for (var k in extraData) {
@@ -116,7 +115,7 @@ $(document).ready(function () {
                 function (response) {
                     if (response.error) {
                         // on error, show error & stop downloading
-                        $('#' + thisId).fadeOut(1000, function () {
+                        $('#geoipdb-screen2-download').fadeOut(1000, function () {
                             $('#manage-geoip-dbs').html(response.error);
                         });
                     }
@@ -177,12 +176,11 @@ $(document).ready(function () {
         // setup the auto-updater
         var ajaxRequest = new ajaxHelper();
         ajaxRequest.addParams({
-            period: $('#geoip-update-period-cell>input:checked').val()
+            period: $('#geoip-update-period-cell').find('>input:checked').val()
         }, 'get');
         ajaxRequest.addParams({
             module: 'UserCountry',
             action: 'updateGeoIPLinks',
-            token_auth: piwik.token_auth,
             loc_db: $('#geoip-location-db').val(),
             isp_db: $('#geoip-isp-db').val(),
             org_db: $('#geoip-org-db').val()

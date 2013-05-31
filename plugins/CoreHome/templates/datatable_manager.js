@@ -42,10 +42,8 @@
         /**
          * Initializes all uninitialized datatable elements. Uninitialized
          * datatable elements do not have an ID set.
-         *
-         * @param {Function} The DataTable's JS class.
          */
-        initNewDataTables: function (klass) {
+        initNewDataTables: function () {
             var self = this;
 
             // find each datatable that hasn't been initialized (has no id attribute),
@@ -53,6 +51,10 @@
             $('div.dataTable').each(function () {
                 if (!$(this).attr('id')) {
                     var params = JSON.parse($(this).attr('data-params') || '{}');
+                    var tableType = $(this).attr('data-table-type');
+                    if (!tableType) {
+                        tableType = 'dataTable';
+                    }
 
                     // convert values in params that are arrays to comma separated string lists
                     for (var key in params) {
@@ -61,7 +63,7 @@
                         }
                     }
 
-                    self.initSingleDataTable(this, klass, params);
+                    self.initSingleDataTable(this, window[tableType], params);
                 }
             });
         },
@@ -165,7 +167,7 @@
          * a specific report.
          *
          * @param {string} report  The report, eg, UserSettings.getWideScrren
-         * @return {DataTable} The DataTable instance created for the element, if
+         * @return {dataTable} The DataTable instance created for the element, if
          *                     the element can be found. undefined, if it can't be found.
          */
         getDataTableInstanceByReport: function (report) {

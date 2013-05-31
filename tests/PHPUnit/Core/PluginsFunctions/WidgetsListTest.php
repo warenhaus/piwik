@@ -24,16 +24,14 @@ class WidgetsListTest extends DatabaseTestCase
 
         $_GET['idSite'] = 1;
 
-        $pluginsManager = Piwik_PluginsManager::getInstance();
-        $pluginsToLoad = Piwik_Config::getInstance()->Plugins['Plugins'];
-        $pluginsManager->loadPlugins($pluginsToLoad);
+        IntegrationTestCase::loadAllPlugins();
 
         Piwik_WidgetsList::_reset();
         $widgets = Piwik_GetWidgetsList();
         Piwik_WidgetsList::_reset();
 
-        // there should be 11 main categories
-        $this->assertEquals(11, count($widgets));
+        // number of main categories
+        $this->assertEquals(12, count($widgets));
 
         // check if each category has the right number of widgets
         $numberOfWidgets = array(
@@ -47,11 +45,13 @@ class WidgetsListTest extends DatabaseTestCase
             'Goals_Goals'                  => 1,
             'SEO'                          => 2,
             'Example Widgets'              => 4,
+            'DevicesDetection_DevicesDetection' => 7,
             'ExamplePlugin_exampleWidgets' => 3
         );
         foreach ($numberOfWidgets AS $category => $widgetCount) {
             $this->assertEquals($widgetCount, count($widgets[$category]), sprintf("Widget: %s", $category));
         }
+        IntegrationTestCase::unloadAllPlugins();
     }
 
     /**
@@ -71,16 +71,14 @@ class WidgetsListTest extends DatabaseTestCase
 
         $_GET['idSite'] = 1;
 
-        $pluginsManager = Piwik_PluginsManager::getInstance();
-        $pluginsToLoad = Piwik_Config::getInstance()->Plugins['Plugins'];
-        $pluginsManager->loadPlugins($pluginsToLoad);
+        IntegrationTestCase::loadAllPlugins();
 
         Piwik_WidgetsList::_reset();
         $widgets = Piwik_GetWidgetsList();
         Piwik_WidgetsList::_reset();
 
-        // there should be 11 main categories
-        $this->assertEquals(11, count($widgets));
+        // number of main categories
+        $this->assertEquals(12, count($widgets));
 
         // check that the goal widget was added
         $numberOfWidgets = array(
@@ -110,16 +108,14 @@ class WidgetsListTest extends DatabaseTestCase
 
         $_GET['idSite'] = 1;
 
-        $pluginsManager = Piwik_PluginsManager::getInstance();
-        $pluginsToLoad = Piwik_Config::getInstance()->Plugins['Plugins'];
-        $pluginsManager->loadPlugins($pluginsToLoad);
+        IntegrationTestCase::loadAllPlugins();
 
         Piwik_WidgetsList::_reset();
         $widgets = Piwik_GetWidgetsList();
         Piwik_WidgetsList::_reset();
 
-        // there should be 12 main categories
-        $this->assertEquals(12, count($widgets));
+        // number of main categories
+        $this->assertEquals(13, count($widgets));
 
         // check if each category has the right number of widgets
         $numberOfWidgets = array(
@@ -131,5 +127,6 @@ class WidgetsListTest extends DatabaseTestCase
             $this->assertEquals($widgetCount, count($widgets[$category]));
         }
     }
+
 
 }

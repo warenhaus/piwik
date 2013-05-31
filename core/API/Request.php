@@ -48,6 +48,12 @@ class Piwik_API_Request
     static public function getRequestArrayFromString($request)
     {
         $defaultRequest = $_GET + $_POST;
+
+        $requestRaw = self::getRequestParametersGET();
+        if(!empty($requestRaw['segment'])) {
+            $defaultRequest['segment'] = $requestRaw['segment'];
+        }
+
         $requestArray = $defaultRequest;
 
         if (!is_null($request)) {
@@ -61,9 +67,10 @@ class Piwik_API_Request
 
             $request = trim($request);
             $request = str_replace(array("\n", "\t"), '', $request);
-            parse_str($request, $requestArray);
 
-            $requestArray = $requestArray + $defaultRequest;
+            $requestParsed = Piwik_Common::getArrayFromQueryString($request);
+            $requestArray = $requestParsed + $defaultRequest;
+
         }
 
         foreach ($requestArray as &$element) {
@@ -85,6 +92,23 @@ class Piwik_API_Request
     function __construct($request = null)
     {
         $this->request = self::getRequestArrayFromString($request);
+        $this->sanitizeRequest();
+    }
+
+    /**
+     * Make sure that the request contains no logical errors
+     */
+    private function sanitizeRequest()
+    {
+        // The label filter does not work with expanded=1 because the data table IDs have a different meaning
+        // depending on whether the table has been loaded yet. expanded=1 causes all tables to be loaded, which
+        // is why the label filter can't descend when a recursive label has been requested.
+        // To fix this, we remove the expanded parameter if a label parameter is set.
+        if (isset($this->request['label']) && !empty($this->request['label'])
+            && isset($this->request['expanded']) && $this->request['expanded']
+        ) {
+            unset($this->request['expanded']);
+        }
     }
 
     /**
@@ -94,7 +118,7 @@ class Piwik_API_Request
      * It then calls the API Proxy which will call the requested method.
      *
      * @throws Piwik_FrontController_PluginDeactivatedException
-     * @return mixed  The data resulting from the API call
+     * @return Piwik_DataTable|mixed  The data resulting from the API call
      */
     public function process()
     {
@@ -172,8 +196,7 @@ class Piwik_API_Request
      */
     public static function processRequest($method, $paramOverride = array())
     {
-        // set up request params
-        $params = $_GET + $_POST;
+        $params = array();
         $params['format'] = 'original';
         $params['module'] = 'API';
         $params['method'] = $method;
@@ -183,4 +206,17 @@ class Piwik_API_Request
         $request = new Piwik_API_Request($params);
         return $request->process();
     }
+
+    /**
+     * @return array
+     */
+    public static function getRequestParametersGET()
+    {
+        if(empty($_SERVER['QUERY_STRING'])) {
+            return array();
+        }
+        $GET = Piwik_Common::getArrayFromQueryString($_SERVER['QUERY_STRING']);
+        return $GET;
+    }
+
 }

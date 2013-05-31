@@ -1,7 +1,8 @@
 {loadJavascriptTranslations plugins='CoreHome'}
 
 <div id="periodString">
-    <div id="date">{'General_DateRange'|translate} <b>{$prettyDate}</b> <img src='themes/default/images/icon-calendar.gif' alt=""/></div>
+    <div id="date">{'General_DateRange'|translate} <b>{$prettyDate}</b> </div>
+    <div class="calendar-icon"></div>
     <div id="periodMore">
         <div class="period-date">
             <h6>{'General_Date'|translate}</h6>
