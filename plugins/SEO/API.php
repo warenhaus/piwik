@@ -133,7 +133,6 @@ class Piwik_SEO_API
         }
         
         $archive = Piwik_Archive::build($idSite, $period, $date);
-        $archive->performQueryWhenNoVisits();
         
         $result = $archive->getDataTableFromNumeric(Piwik_SEO::$seoMetrics);
         $result->filter('ColumnCallbackAddColumn', array(array(), 'label', 'Piwik_Translate', array('SEO_Stats_js')));

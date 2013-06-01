@@ -15,16 +15,16 @@
  */
 class Piwik_VisitFrequency extends Piwik_Plugin
 {
-	public static $visitFrequencyMetrics = array(
-		'nb_uniq_visitors_returning',
-		'nb_visits_returning',
-		'nb_actions_returning',
-		'max_actions_returning',
-		'sum_visit_length_returning',
-		'bounce_count_returning',
-		'nb_visits_converted_returning',
-	);
-	
+    public static $visitFrequencyMetrics = array(
+        'nb_uniq_visitors_returning',
+        'nb_visits_returning',
+        'nb_actions_returning',
+        'max_actions_returning',
+        'sum_visit_length_returning',
+        'bounce_count_returning',
+        'nb_visits_converted_returning',
+    );
+    
     public function getInformation()
     {
         $info = array(
@@ -49,21 +49,21 @@ class Piwik_VisitFrequency extends Piwik_Plugin
         return $hooks;
     }
 
-	/**
-	 * Checks if a metric is calculated by the VisitFrequency plugin.
-	 */
-	public function getPluginNameForMetric( $notification )
-	{
-		$pluginName =& $notification->getNotificationObject();
-		$metricName = $notification->getNotificationInfo();
-		
-		if ($pluginName === false
-			&& in_array($metricName, self::$visitFrequencyMetrics)
-		) {
-			$pluginName = 'VisitFrequency';
-		}
-	}
-	
+    /**
+     * Checks if a metric is calculated by the VisitFrequency plugin.
+     */
+    public function getPluginNameForMetric( $notification )
+    {
+        $pluginName =& $notification->getNotificationObject();
+        $metricName = $notification->getNotificationInfo();
+        
+        if (empty($pluginName)
+            && in_array($metricName, self::$visitFrequencyMetrics)
+        ) {
+            $pluginName = 'VisitFrequency';
+        }
+    }
+    
     /**
      * @param Piwik_Event_Notification $notification  notification object
      */
@@ -83,10 +83,10 @@ class Piwik_VisitFrequency extends Piwik_Plugin
                 'nb_actions_per_visit_returning' => Piwik_Translate('VisitFrequency_ColumnAvgActionsPerReturningVisit'),
                 'nb_uniq_visitors_returning'     => Piwik_Translate('VisitFrequency_ColumnUniqueReturningVisitors'),
 // Not displayed
-//    			'nb_visits_converted_returning',
-//    			'sum_visit_length_returning',
-//    			'max_actions_returning',
-//    			'bounce_count_returning',
+//                'nb_visits_converted_returning',
+//                'sum_visit_length_returning',
+//                'max_actions_returning',
+//                'bounce_count_returning',
             ),
             'processedMetrics' => false,
             'order'            => 40
@@ -137,19 +137,19 @@ class Piwik_VisitFrequency extends Piwik_Plugin
         if (!$archiveProcessing->shouldProcessReportsForPlugin($this->getPluginName())) return;
 
         $select = "count(distinct log_visit.idvisitor) as nb_uniq_visitors_returning,
-				count(*) as nb_visits_returning,
-				sum(log_visit.visit_total_actions) as nb_actions_returning,
-				max(log_visit.visit_total_actions) as max_actions_returning,
-				sum(log_visit.visit_total_time) as sum_visit_length_returning,
-				sum(case log_visit.visit_total_actions when 1 then 1 when 0 then 1 else 0 end) as bounce_count_returning,
-				sum(case log_visit.visit_goal_converted when 1 then 1 else 0 end) as nb_visits_converted_returning";
+                count(*) as nb_visits_returning,
+                sum(log_visit.visit_total_actions) as nb_actions_returning,
+                max(log_visit.visit_total_actions) as max_actions_returning,
+                sum(log_visit.visit_total_time) as sum_visit_length_returning,
+                sum(case log_visit.visit_total_actions when 1 then 1 when 0 then 1 else 0 end) as bounce_count_returning,
+                sum(case log_visit.visit_goal_converted when 1 then 1 else 0 end) as nb_visits_converted_returning";
 
         $from = "log_visit";
 
         $where = "log_visit.visit_last_action_time >= ?
-				AND log_visit.visit_last_action_time <= ?
-		 		AND log_visit.idsite = ?
-		 		AND log_visit.visitor_returning >= 1";
+                AND log_visit.visit_last_action_time <= ?
+                 AND log_visit.idsite = ?
+                 AND log_visit.visitor_returning >= 1";
 
         $bind = array($archiveProcessing->getStartDatetimeUTC(),
                       $archiveProcessing->getEndDatetimeUTC(), $archiveProcessing->idsite);

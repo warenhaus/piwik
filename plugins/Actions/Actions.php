@@ -71,7 +71,7 @@ class Piwik_Actions extends Piwik_Plugin
         $pluginName =& $notification->getNotificationObject();
         $metricName = $notification->getNotificationInfo();
         
-        if ($pluginName === false
+        if (empty($pluginName	)
             && in_array($metricName, self::$actionsMetrics)
         ) {
             $pluginName = 'Actions';

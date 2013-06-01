@@ -99,7 +99,7 @@ class Piwik_Goals extends Piwik_Plugin
         $pluginName =& $notification->getNotificationObject();
         $metricName = $notification->getNotificationInfo();
         
-        if ($pluginName === false
+        if (empty($pluginName)
             && strpos($metricName, 'Goal_') === 0
         ) {
             $pluginName = 'Goals';

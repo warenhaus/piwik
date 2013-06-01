@@ -153,7 +153,7 @@ class Piwik_SEO extends Piwik_Plugin
         }
         
         $idSitesToArchiveFor = $this->getSitesToArchiveSEOMetricsFor();
-        foreach ($idSitesToArchiveFor as $idSite) {
+        foreach ($idSitesToArchiveFor as $idSite) { // TODO: do more than one at once
             $site = new Piwik_Site($idSite);
             $siteUrl = $site->getMainUrl();
             
@@ -165,48 +165,14 @@ class Piwik_SEO extends Piwik_Plugin
             $archiveProcessing->setPeriod(Piwik_Period::factory('day', $date));
             $archiveProcessing->setSegment(new Piwik_Segment(false, array($idSite)));
             $archiveProcessing->init();
-            $archiveProcessing->setRequestedReport('SEO_Metrics');
+            $archiveProcessing->setRequestedPlugin('SEO');
             $archiveProcessing->loadArchive();
             
             // insert statistics w/ new idarchive
-            foreach ($stats as $name => $value) {echo "NAME: $name\nVALUE: $value\n";
+            foreach ($stats as $name => $value) {
                 $archiveProcessing->insertNumericRecord($name, $value);
             }
             $archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
-        }
-    }
-    
-    /**
-     * Archives SEO metrics for a non-day period. This function gets the metrics
-     * for the last day in the period and stores them as the SEO metrics for the
-     * period.
-     * 
-     * @param Piwik_Event_Notification $notification
-     */
-    public function archivePeriod( $notification )
-    {
-        $archiveProcessing = $notification->getNotificationObject();
-        
-        $site = $archiveProcessing->site;
-        if (!$archiveProcessing->shouldProcessReportsForPlugin($this->getPluginName())
-            || !$this->shouldArchiveForSite($site->getId())
-        ) {
-            return;
-        }
-        
-        // get seo metrics for the last day in the current period
-        $lastDay = $archiveProcessing->period->getDateEnd()->toString();
-        $archive = $this->makeArchiveQuery($archiveProcessing, $period = 'day', $date = $lastDay);
-        if ($archive === null) {
-            return;
-        }
-        
-        $dataTable = $archive->getDataTableFromNumeric(self::$seoMetrics);
-        $stats = $this->getColumnsOfFirstRow($dataTable);
-        
-        // insert metrics for new period
-        foreach ($stats as $name => $value) {
-            $archiveProcessing->insertNumericRecord($name, $value);
         }
     }
     
@@ -218,15 +184,6 @@ class Piwik_SEO extends Piwik_Plugin
     public static function getSiteCreationOptionName( $idSite )
     {
         return self::SITE_CREATION_OPTION_PREFIX.$idSite;
-    }
-    
-    private function getColumnsOfFirstRow($dataTable)
-    {
-        $result = array();
-        if ($dataTable->getRowsCount() != 0) {
-            $result = $dataTable->getFirstRow()->getColumns();
-        }
-        return $result;
     }
     
     /**

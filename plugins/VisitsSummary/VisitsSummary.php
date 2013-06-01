@@ -36,7 +36,25 @@ class Piwik_VisitsSummary extends Piwik_Plugin
             'API.getReportMetadata' => 'getReportMetadata',
             'WidgetsList.add'       => 'addWidgets',
             'Menu.add'              => 'addMenu',
+            'Archive.getPluginNameForMetric'   => 'getPluginNameForMetric',
         );
+    }
+    
+    /**
+     * Event handler for Archive.getPluginNameForMetric. Checks if a metric is a
+     * core metric.
+     */
+    public function getPluginNameForMetric( $notification )
+    {
+        $pluginName =& $notification->getNotificationObject();
+        $metricName = $notification->getNotificationInfo();
+        
+        if (empty($pluginName	)
+            && (in_array($metricName, Piwik_ArchiveProcessing::getCoreMetrics())
+                || $metricName == 'max_actions')
+        ) {
+            $pluginName = 'VisitsSummary';
+        }
     }
 
     /**

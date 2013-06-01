@@ -958,35 +958,23 @@ class Piwik_Archive
     /**
      * Returns the name of the plugin that archives a given report.
      * 
-     * @param string $report Archive data name, ie, 'nb_visits', 'UserSettings_...', etc.
+     * @param string $archiveName Archive data name, ie, 'nb_visits', 'UserSettings_...', etc.
      * @return string
      */
-    public static function getPluginForReport($report)
+    public static function getPluginForReport($archiveName)
     {
-        // Core metrics are always processed in Core, for the requested date/period/segment
-        if (in_array($report, Piwik_ArchiveProcessing::getCoreMetrics())
-            || $report == 'max_actions'
-        ) {
-            $report = 'VisitsSummary_CoreMetrics';
-        }
-        // VisitFrequency metrics don't follow the same naming convention (HACK) 
-        else if(strpos($report, '_returning') > 0
-            // ignore Goal_visitor_returning_1_1_nb_conversions 
-            && strpos($report, 'Goal_') === false
-        ) {
-            $report = 'VisitFrequency_Metrics';
-        }
-        // Goal_* metrics are processed by the Goals plugin (HACK)
-        else if(strpos($report, 'Goal_') === 0) {
-            $report = 'Goals_Metrics';
+        $plugin = false;
+        Piwik_PostEvent('Archive.getPluginNameForMetric', $plugin, $archiveName);
+        
+        if (empty($plugin)) {
+            $plugin = substr($archiveName, 0, strpos($archiveName, '_'));
         }
         
-        $plugin = substr($report, 0, strpos($report, '_'));
         if (empty($plugin)
             || !Piwik_PluginsManager::getInstance()->isPluginActivated($plugin)
         ) {
             $pluginStr = empty($plugin) ? '' : "($plugin)";
-            throw new Exception("Error: The report '$report' was requested but it is not available "
+            throw new Exception("Error: The report '$archiveName' was requested but it is not available "
                                . "at this stage. You may also disable the related plugin $pluginStr "
                                . "to avoid this error.");
         }
