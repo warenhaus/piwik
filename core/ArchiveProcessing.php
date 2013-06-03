@@ -472,7 +472,7 @@ abstract class Piwik_ArchiveProcessing
     /**
      * @see loadArchive()
      */
-    public function launchArchiving()
+    public function launchArchiving($compute = null)
     {
         if (!Piwik::getArchiveProcessingLock($this->idsite, $this->period, $this->segment)) {
             Piwik::log('Unable to get lock for idSite = ' . $this->idsite

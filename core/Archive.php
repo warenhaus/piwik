@@ -852,6 +852,22 @@ class Piwik_Archive
     }
     
     /**
+     * TODO
+     */
+    public function isQueryingForMultipleSites()
+    {
+        return count($this->siteIds) > 1 || $this->forceIndexedBySite;
+    }
+    
+    /**
+     * TODO
+     */
+    public function isQueryingForMultiplePeriods()
+    {
+        return count($this->periods) > 1 || $this->forceIndexedByDate;
+    }
+    
+    /**
      * Returns an array describing what metadata to use when indexing a query result.
      * For use with Piwik_Archive_DataCollection.
      * 
@@ -861,15 +877,11 @@ class Piwik_Archive
     {
         $indices = array();
         
-        if (count($this->siteIds) > 1
-            || $this->forceIndexedBySite
-        ) {
+        if ($this->isQueryingForMultipleSites()) {
             $indices['site'] = 'idSite';
         }
         
-        if (count($this->periods) > 1
-            || $this->forceIndexedByDate
-        ) {
+        if ($this->isQueryingForMultiplePeriods()) {
             $indices['period'] = 'date';
         }
         

@@ -125,16 +125,58 @@ class Piwik_SEO_API
      */
     private function getSEOStatsWithoutMetadata($idSite, $period, $date)
     {
-        if ($period == 'range') {
-            $oPeriod = new Piwik_Period_Range($period, $date);
+        $forceIndexedBySite = $forceIndexedByDate = false;
+        
+        if ($idSite == 'all') {
+            $forceIndexedBySite = true;
+        }
+        $siteIds = Piwik_Site::getIdSitesFromIdSitesString($idSite);
+        
+        if (Piwik_Archive::isMultiplePeriod($date, $period)) {
+            $forceIndexedByDate = true;
             
-            $period = 'day';
-            $date = $oPeriod->getDateEnd()->toString();
+            $oPeriod = new Piwik_Period_Range($period, $date);
+            $periods = $oPeriod->getSubperiods();
+        } else {
+            if (count($siteIds) == 1) {
+                $oSite = new Piwik_Site($siteIds[0]);
+            } else {
+                $oSite = null;
+            }
+            
+            $oPeriod = Piwik_Archive::makePeriodFromQueryParams($oSite, $period, $date);
+            $periods = array($oPeriod);
         }
         
-        $archive = Piwik_Archive::build($idSite, $period, $date);
+        // TODO: code redundancy w/ Archive.php (everything above this line)
+        if ($period != 'day') {
+            foreach ($periods as &$oPeriod) {
+                $oPeriod = Piwik_Period::factory('day', $oPeriod->getDateEnd());
+            }
+        }
         
-        $result = $archive->getDataTableFromNumeric(Piwik_SEO::$seoMetrics);
+        $segment = new Piwik_Segment('', $siteIds);
+        $archive = new Piwik_Archive($siteIds, $periods, $segment, $forceIndexedBySite, $forceIndexedByDate);
+        
+        // if no SEO metrics have been archived and querying for one site and today, get the SEO metrics
+        // via HTTP.
+        if (!$archive->isQueryingForMultipleSites()
+            && !$archive->isQueryingForMultiplePeriods()
+        ) { 
+            $haveSeoMetricsBeenArchived = $archive->getNumeric(Piwik_SEO::DONE_ARCHIVE_NAME) == 1;
+            
+            if ($haveSeoMetricsBeenArchived) {
+                $data = Piwik_SEO::archiveSEOMetrics(reset($siteIds));
+                
+                $result = new Piwik_DataTable_Simple();
+                $result->addRow(new Piwik_DataTable_Row(array(Piwik_DataTable_Row::COLUMNS => reset($data))));
+            }
+        }
+        
+        if (!isset($result)) {
+            $result = $archive->getDataTableFromNumeric(Piwik_SEO::$seoMetrics);
+        }
+        
         $result->filter('ColumnCallbackAddColumn', array(array(), 'label', 'Piwik_Translate', array('SEO_Stats_js')));
         return $result;
     }

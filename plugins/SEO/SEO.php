@@ -143,7 +143,7 @@ class Piwik_SEO extends Piwik_Plugin
      * 
      * @param Piwik_Event_Notification $notification
      */
-    public function archiveSEOMetrics( $date = false )
+    public function archiveSEOMetrics($idSite = false, $date = false)// TODO: fix parameter styles
     {
         // when testing, make sure we can archive for any date
         if (self::$customRankCheckerClassName === null
@@ -152,13 +152,21 @@ class Piwik_SEO extends Piwik_Plugin
             $date = Piwik_Date::factory('today');
         }
         
-        $idSitesToArchiveFor = $this->getSitesToArchiveSEOMetricsFor();
+        if ($idSite === false) {
+            $idSitesToArchiveFor = $this->getSitesToArchiveSEOMetricsFor();
+        } else {
+            $idSitesToArchiveFor = array($idSite);
+        }
+        
+        $result = array();
         foreach ($idSitesToArchiveFor as $idSite) { // TODO: do more than one at once
             $site = new Piwik_Site($idSite);
             $siteUrl = $site->getMainUrl();
             
             $rankChecker = self::makeRankChecker($siteUrl, $date);
             $stats = $rankChecker->getAllStats();
+            
+            $result[$idSite] = $stats;
             
             $archiveProcessing = Piwik_ArchiveProcessing::factory('day');
             $archiveProcessing->setSite($site);
@@ -174,6 +182,7 @@ class Piwik_SEO extends Piwik_Plugin
             }
             $archiveProcessing->insertNumericRecord(self::DONE_ARCHIVE_NAME, 1);
         }
+        return $result;
     }
     
     /**
@@ -252,7 +261,7 @@ class Piwik_SEO extends Piwik_Plugin
         }
     }
     
-    /**
+    /**TODO: go through all new functions and check if they are used.
      * Returns a Piwik_Archive instance that can be used to query existing SEO metrics
      * while archiving for another date.
      */

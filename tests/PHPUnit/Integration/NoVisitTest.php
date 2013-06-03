@@ -19,9 +19,11 @@ class Test_Piwik_Integration_NoVisit extends IntegrationTestCase
     {
         parent::setUpBeforeClass();
         
+        $seoPlugin = Piwik_PluginsManager::getInstance()->getLoadedPlugin('SEO');
+        
         $date = Piwik_Date::factory(self::$fixture->dateTime);
         for ($i = 0; $i != 7; ++$i) {
-            Piwik_PluginsManager::getInstance()->getLoadedPlugin('SEO')->archiveSEOMetrics($date->addDay($i));
+            $seoPlugin->archiveSEOMetrics($idSite = false, $date->addDay($i));
         }
     }
 
