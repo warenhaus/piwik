@@ -172,24 +172,6 @@ class Piwik_Archive
         'sum_daily_nb_uniq_visitors' => Piwik_Archive::INDEX_SUM_DAILY_NB_UNIQ_VISITORS,
     );
 
-    /**
-     * Metrics calculated and archived by the Actions plugin.
-     *
-     * @var array
-     */
-    public static $actionsMetrics = array(
-        'nb_pageviews',
-        'nb_uniq_pageviews',
-        'nb_downloads',
-        'nb_uniq_downloads',
-        'nb_outlinks',
-        'nb_uniq_outlinks',
-        'nb_searches',
-        'nb_keywords',
-        'nb_hits',
-        'nb_hits_following_search',
-    );
-
     const LABEL_ECOMMERCE_CART = 'ecommerceAbandonedCart';
     const LABEL_ECOMMERCE_ORDER = 'ecommerceOrder';
     
@@ -904,29 +886,6 @@ class Piwik_Archive
         return round((float)$value, 2);
     }
     
-    private function getArchiveDescriptor($idSite, $period)
-    {
-        return "site $idSite, {$period->getLabel()} ({$period->getPrettyString()})";
-    }
-    
-    private function uncompress($data)
-    {
-        return @gzuncompress($data);
-    }
-    
-    private function getAsNonEmptyArray($array, $paramName)
-    {
-        if (!is_array($array)) {
-            $array = array($array);
-        }
-        
-        if (empty($array)) {
-            throw new Exception("Piwik_Archive::__construct: \$$paramName is empty.");
-        }
-        
-        return $array;
-    }
-    
     /**
      * Initializes the archive ID cache ($this->idarchives) for a particular 'done' flag.
      * 
@@ -991,5 +950,28 @@ class Piwik_Archive
                                . "to avoid this error.");
         }
         return $plugin;
+    }
+    
+    private function getAsNonEmptyArray($array, $paramName)
+    {
+        if (!is_array($array)) {
+            $array = array($array);
+        }
+        
+        if (empty($array)) {
+            throw new Exception("Piwik_Archive::__construct: \$$paramName is empty.");
+        }
+        
+        return $array;
+    }
+    
+    private function getArchiveDescriptor($idSite, $period)
+    {
+        return "site $idSite, {$period->getLabel()} ({$period->getPrettyString()})";
+    }
+    
+    private function uncompress($data)
+    {
+        return @gzuncompress($data);
     }
 }
