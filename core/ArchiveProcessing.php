@@ -518,7 +518,6 @@ abstract class Piwik_ArchiveProcessing
      * @param string $periodLabel
      * @param string $plugin Plugin name or 'all'
      * @return string
-     * TODO: remove?
      */
     public static function getDoneStringFlagFor($segment, $periodType, $plugin)
     {
@@ -526,14 +525,24 @@ abstract class Piwik_ArchiveProcessing
     }
     
     /**
-     * TODO
+     * Returns the name of the archive holding data for specific plugin given a
+     * period type and segment.
+     * 
+     * An archive name is a string that helps to identify a set of archive rows
+     * as one 'archive'. An archive for a site, period and segment is identified
+     * by this name and an int ID.
+     * 
+     * @param string $plugin A plugin or 'all'
+     * @param string $periodType ('day', 'week', 'month', 'year' or 'range')
+     * @param Piwik_Segment $segment
+     * @return string
      */
     public static function getArchiveNameFor($plugin, $periodType, $segment)
     {
         $archiveName = $segment->getHash();
         
         if (!self::shouldProcessReportsAllPluginsFor($segment, $periodType)) {
-            if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)) {
+            if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)) { // TODO: when does this code ever get executed?
                 $plugin = 'all';
             }
             
@@ -544,7 +553,12 @@ abstract class Piwik_ArchiveProcessing
     }
     
     /**
-     * TODO
+     * Returns the plugin name from an archive name, or false if it cannot get one.
+     * If this method cannot find a plugin name, we can assume the archive holds
+     * data for all plugins.
+     * 
+     * @param string $archiveName
+     * @return string|false
      */
     public static function getPluginFromArchiveName($archiveName)
     {
@@ -558,11 +572,14 @@ abstract class Piwik_ArchiveProcessing
     }
     
     /**
-     * TODO
+     * Returns the archive name for a given done string flag.
+     * 
+     * @param string $doneFlag
+     * @return string
      */
-    public static function getArchiveNameFromDoneStringFlag($archiveName)
+    public static function getArchiveNameFromDoneStringFlag($doneFlag)
     {
-        return substr($archiveName, 5);
+        return substr($doneFlag, 5);
     }
 
     /**
