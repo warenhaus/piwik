@@ -145,7 +145,7 @@ class Piwik_API_Request
             $returnedValue = Piwik_API_Proxy::getInstance()->call($moduleClass, $method, $this->request);
 
             $toReturn = $response->getResponse($returnedValue, $module, $method);
-        } catch (Exception $e) {echo $e->getMessage()."\n".$e->getTraceAsString();
+        } catch (Exception $e) {
             $toReturn = $response->getResponseException($e);
         }
         return $toReturn;
