@@ -685,13 +685,15 @@ class Piwik_Archive
             $archiveNames[] = $archiveName;
             if (!isset($this->idarchives[$archiveName])) {
                 $archiveNamesToCacheIdsFor[] = $archiveName;
+                
+                $this->initializeArchiveIdCache($archiveName); // TODO modify code of function
             }
         }
         
         // cache id archives for plugins we haven't processed yet
-        if (!empty($archiveNames)) {
+        if (!empty($archiveNamesToCacheIdsFor)) {
             if (!$this->isArchivingDisabled()) {
-                $this->cacheArchiveIdsAfterLaunching($archiveNames, $plugins);
+                $this->cacheArchiveIdsAfterLaunching($archiveNamesToCacheIdsFor, $plugins);
             } else {
                 $this->cacheArchiveIdsWithoutLaunching($plugins);
             }
@@ -757,8 +759,6 @@ class Piwik_Archive
                 
                 // process for each plugin as well
                 foreach ($archiveNames as $name) {
-                    $this->initializeArchiveIdCache($name);
-                    
                     $plugin = Piwik_ArchiveProcessing::getPluginFromArchiveName($name);
                     if (empty($plugin)) {
                         $plugin = reset($plugins);
@@ -795,11 +795,6 @@ class Piwik_Archive
     {
         $idarchivesByReport = $this->dataAccess->getArchiveIds(
             $this->siteIds, $this->periods, $this->segment, $plugins);
-        
-        // initialize archive ID cache for each report
-        foreach ($plugins as $plugin) {
-            $this->initializeArchiveIdCache($this->getArchiveNameForPlugin($plugin));
-        }
         
         foreach ($idarchivesByReport as $name => $idarchivesByDate) {
             foreach ($idarchivesByDate as $dateRange => $idarchives) {
@@ -966,6 +961,10 @@ class Piwik_Archive
     
     private function getArchiveNameForPlugin($plugin)
     {
-        return Piwik_ArchiveProcessing::getArchiveNameFor($plugin, $this->getPeriodLabel(), $this->segment);
+        $name = Piwik_ArchiveProcessing::getArchiveNameFor($plugin, $this->getPeriodLabel(), $this->segment);
+        if (empty($name)) {
+            return 'all';
+        }
+        return $name;
     }
 }

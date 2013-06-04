@@ -144,7 +144,7 @@ class Piwik_DataAccess_ArchiveQuery
         $doneFlags = array();
         foreach ($plugins as $plugin) {
             $done = Piwik_ArchiveProcessing::getDoneStringFlagFor($segment, $periodType, $plugin);
-            $donePlugins = Piwik_ArchiveProcessing::getDoneStringFlagFor($segment, $periodType, $plugin, true);
+            $donePlugins = Piwik_ArchiveProcessing::getDoneStringFlagFor($segment, $periodType, 'all');
             
             $doneFlags[$done] = $done;
             $doneFlags[$donePlugins] = $donePlugins;
