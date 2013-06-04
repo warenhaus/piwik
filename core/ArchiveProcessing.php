@@ -506,8 +506,8 @@ abstract class Piwik_ArchiveProcessing
      */
     public function getDoneStringFlag($flagArchiveAsAllPlugins = false)
     {
-        return self::getDoneStringFlagFor(
-            $this->getSegment(), $this->period->getLabel(), $this->getRequestedPlugin(), $flagArchiveAsAllPlugins);
+        $plugin = $flagArchiveAsAllPlugins ? 'all' : $this->getRequestedPlugin();
+        return self::getDoneStringFlagFor($this->getSegment(), $this->period->getLabel(), $plugin);
     }
 
     /**
@@ -516,22 +516,45 @@ abstract class Piwik_ArchiveProcessing
      *
      * @param Piwik_Segment $segment
      * @param string $periodLabel
-     * @param string $plugin
-     * @param bool $flagArchiveAsAllPlugins
+     * @param string $plugin Plugin name or 'all'
      * @return string
+     * TODO: remove?
      */
-    public static function getDoneStringFlagFor($segment, $periodLabel, $plugin, $flagArchiveAsAllPlugins = false)
+    public static function getDoneStringFlagFor($segment, $periodType, $plugin)
     {
-        $segmentHash = $segment->getHash();
-        if (!self::shouldProcessReportsAllPluginsFor($segment, $periodLabel)) {
-            if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)
-                || $flagArchiveAsAllPlugins
-            ) {
+        return 'done' . self::getArchiveNameFor($plugin, $periodType, $segment);
+    }
+    
+    /**
+     * TODO
+     */
+    public static function getArchiveNameFor($plugin, $periodType, $segment)
+    {
+        $archiveName = $segment->getHash();
+        
+        if (!self::shouldProcessReportsAllPluginsFor($segment, $periodType)) {
+            if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)) {
                 $plugin = 'all';
             }
-            $segmentHash .= '.' . $plugin;
+            
+            $archiveName .= '.' . $plugin;
         }
-        return 'done' . $segmentHash;
+        
+        return $archiveName;
+    }
+    
+    /**
+     * TODO
+     */
+    public static function getPluginFromArchiveName($archiveName)
+    {
+        $lastPart = substr($archiveName, strrpos($archiveName, '.') + 1);
+        
+        if (Piwik_PluginsManager::getInstance()->isPluginActivated($lastPart)) {
+            return $lastPart;
+        } else {
+            return false; // not a valid plugin name
+        }
     }
 
     /**
