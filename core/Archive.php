@@ -216,14 +216,14 @@ class Piwik_Archive
     
     /**
      * List of archive IDs for the sites, periods and segment we are querying with.
-     * Archive IDs are indexed by done flag and period, ie:
+     * Archive IDs are indexed by archive name and period, ie:
      * 
      * array(
-     *     'done.Referers' => array(
+     *     'Referers' => array(
      *         '2010-01-01' => 1,
      *         '2010-01-02' => 2,
      *     ),
-     *     'done.VisitsSummary' => array(
+     *     'VisitsSummary' => array(
      *         '2010-01-01' => 3,
      *         '2010-01-02' => 4,
      *     ),
@@ -232,7 +232,7 @@ class Piwik_Archive
      * or,
      * 
      * array(
-     *     'done.all' => array(
+     *     'all' => array(
      *         '2010-01-01' => 1,
      *         '2010-01-02' => 2
      *     )
