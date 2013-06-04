@@ -556,6 +556,14 @@ abstract class Piwik_ArchiveProcessing
             return false; // not a valid plugin name
         }
     }
+    
+    /**
+     * TODO
+     */
+    public static function getArchiveNameFromDoneStringFlag($archiveName)
+    {
+        return substr($archiveName, 5);
+    }
 
     /**
      * Init the object before launching the real archive processing

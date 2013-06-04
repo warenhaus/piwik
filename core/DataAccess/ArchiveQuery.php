@@ -67,7 +67,11 @@ class Piwik_DataAccess_ArchiveQuery
             
             // get the archive IDs
             foreach (Piwik_FetchAll($sql, $bind) as $row) {
-                $archiveName = $row['name'];
+                $archiveName = Piwik_ArchiveProcessing::getArchiveNameFromDoneStringFlag($row['name']);
+                if (empty($archiveName)) {
+                    $archiveName = 'all';
+                }
+                
                 $dateStr = $row['date1'].",".$row['date2'];
                 
                 $result[$archiveName][$dateStr][] = $row['idarchive'];
