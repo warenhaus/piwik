@@ -176,7 +176,7 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
         self::setApiToCall(array());
         
         if (class_exists('Piwik_SEO')) {
-            Piwik_SEO::$customRankCheckerClassName = 'MockSEORankChecker';
+            Piwik_SEO_ArchiveProcessing::$customRankCheckerClassName = 'MockSEORankChecker';
         }
 
         FakeAccess::$superUserLogin = 'superUserLogin';
@@ -222,7 +222,7 @@ abstract class IntegrationTestCase extends PHPUnit_Framework_TestCase
         Piwik_Visualization_Cloud::$debugDisableShuffle = true;
         
         if (class_exists('Piwik_SEO')) {
-            Piwik_SEO::$customRankCheckerClassName = null;
+            Piwik_SEO_ArchiveProcessing::$customRankCheckerClassName = null;
         }
     }
 

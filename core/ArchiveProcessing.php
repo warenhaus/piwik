@@ -222,12 +222,18 @@ abstract class Piwik_ArchiveProcessing
      * Returns the Piwik_ArchiveProcessing_Day or Piwik_ArchiveProcessing_Period object
      * depending on $name period string
      *
-     * @param string $name day|week|month|year
+     * @param string $name day|week|month|year|range
+     * @param string|false $plugin Name of the plugin whose archiving will be launched.
      * @throws Exception
      * @return Piwik_ArchiveProcessing Piwik_ArchiveProcessing_Day|Piwik_ArchiveProcessing_Period
      */
-    public static function factory($name)
+    public static function factory($name, $plugin = false)
     {
+        $pluginArchiveProcessing = 'Piwik_'.$plugin.'_ArchiveProcessing';
+        if (class_exists($pluginArchiveProcessing)) {
+            return new $pluginArchiveProcessing();
+        }
+        
         switch ($name) {
             case 'day':
                 $process = new Piwik_ArchiveProcessing_Day();
@@ -472,7 +478,7 @@ abstract class Piwik_ArchiveProcessing
     /**
      * @see loadArchive()
      */
-    public function launchArchiving($compute = null)
+    public function launchArchiving()
     {
         if (!Piwik::getArchiveProcessingLock($this->idsite, $this->period, $this->segment)) {
             Piwik::log('Unable to get lock for idSite = ' . $this->idsite
@@ -539,21 +545,29 @@ abstract class Piwik_ArchiveProcessing
      */
     public static function getArchiveNameFor($plugin, $periodType, $segment)
     {
-        $archiveBaseName = null;
-        Piwik_PostEvent('ArchiveProcessing.getArchiveBaseName', $archiveBaseName, $pluginName);
-        // TODO: rest
-        $archiveName = $segment->getHash();
-        
-        if (!self::shouldProcessReportsAllPluginsFor($segment, $periodType)) {
-            if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)) { // TODO: when does this code ever get executed?
-                $plugin = 'all';
-                throw new Exception("am I here?");
-            }
-            
-            $archiveName .= '.' . $plugin;
+        if ($plugin != 'all'
+            && !Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)
+        ) { // sanity check
+            throw new Exception("Plugin for archive is not loaded!");
         }
         
-        return $archiveName;
+        $archiveNameParts = array($segment->getHash());
+        
+        $archiveBaseName = null;
+        Piwik_PostEvent('ArchiveProcessing.getArchiveBaseName', $archiveBaseName, $plugin);
+        
+        // if the plugin wants to use a custom name, use that, otherwise check if we should
+        // archive all plugins or just this one 
+        // TODO: should the archive name change at all if we process all plugins? perhaps we can use
+        //       separate done string flags per plugin and check for 'done.all'/'done' for backward compatibility
+        //       in Archive.php?
+        if (!empty($archiveBaseName)) {
+            $archiveNameParts[] = $archiveBaseName;
+        } else if (!self::shouldProcessReportsAllPluginsFor($segment, $periodType)) {
+            $archiveNameParts[] = $plugin;
+        }
+        
+        return implode('.', array_filter($archiveNameParts));
     }
     
     /**

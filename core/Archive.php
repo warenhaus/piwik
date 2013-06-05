@@ -526,6 +526,23 @@ class Piwik_Archive
         return !Piwik::isUserIsAnonymous()
             || Piwik_Config::getInstance()->General['anonymous_user_enable_use_segments_API'];
     }
+    
+    /**
+     * Returns true if archiving was processed for a set of archive data names and the
+     * current period, site and segment.
+     * 
+     * @param array|string $names
+     * @return bool
+     */
+    public function doArchivesExistFor($names)
+    {
+        if (!is_array($names)) {
+            $names = array($names);
+        }
+        
+        $archiveIds = $this->getArchiveIds($names);
+        return !empty($archiveIds);
+    }
 
     /**
      * Indicate if $dateString and $period correspond to multiple periods
@@ -676,7 +693,7 @@ class Piwik_Archive
         // cache id archives for plugins we haven't processed yet
         if (!empty($archiveNamesToCacheIdsFor)) {
             if (!$this->isArchivingDisabled()) {
-                $this->cacheArchiveIdsAfterLaunching($archiveNamesToCacheIdsFor, $plugins);
+                $this->cacheArchiveIdsAfterLaunching($archiveNamesToCacheIdsFor, $plugins, $archiveDataNames);
             } else {
                 $this->cacheArchiveIdsWithoutLaunching($plugins);
             }
@@ -701,8 +718,9 @@ class Piwik_Archive
      * 
      * @param array $archiveNames @see getArchiveNameOfReport
      * @param array $plugins List of plugin names to archive.
+     * @param array $archiveDataNames
      */
-    private function cacheArchiveIdsAfterLaunching($archiveNames, $plugins)
+    private function cacheArchiveIdsAfterLaunching($archiveNames, $plugins, $archiveDataNames)
     {
         $today = Piwik_Date::today();
         
@@ -732,14 +750,6 @@ class Piwik_Archive
                     continue;
                 }
                 
-                // prepare the ArchiveProcessing instance
-                $processing = $this->getArchiveProcessingInstance($period);
-                $processing->setSite($site);
-                $processing->setPeriod($period);
-                $processing->setSegment($this->segment);
-                
-                $processing->isThereSomeVisits = null;
-                
                 // process for each plugin as well
                 foreach ($archiveNames as $name) {
                     $plugin = Piwik_ArchiveProcessing::getPluginFromArchiveName($name);
@@ -747,6 +757,13 @@ class Piwik_Archive
                         $plugin = reset($plugins);
                     }
                     
+                    // prepare the ArchiveProcessing instance
+                    $processing = $this->getArchiveProcessingInstance($period, $plugin);
+                    $processing->setSite($site);
+                    $processing->setPeriod($period);
+                    $processing->setSegment($this->segment);
+                    
+                    $processing->isThereSomeVisits = null; // TODO: try moving this to init() function (need to benchmark integration tests)
                     $processing->init();
                     $processing->setRequestedPlugin($plugin);
                     
@@ -807,13 +824,16 @@ class Piwik_Archive
      * 
      * @param Piwik_Period $period
      */
-    private function getArchiveProcessingInstance($period)
+    private function getArchiveProcessingInstance($period, $plugin)
     {
         $label = $period->getLabel();
-        if (!isset($this->processingCache[$label])) {
-            $this->processingCache[$label] = Piwik_ArchiveProcessing::factory($label);
+        $cacheKey = $label . '.' . $plugin;
+        
+        if (!isset($this->processingCache[$cacheKey])) {
+            $this->processingCache[$cacheKey] = Piwik_ArchiveProcessing::factory($label, $plugin);
         }
-        return $this->processingCache[$label];
+        
+        return $this->processingCache[$cacheKey];
     }
     
     private function getPeriodLabel()

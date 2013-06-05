@@ -79,7 +79,7 @@ class Piwik_SEO_API
         $siteCreationTime = Piwik_GetOption($siteCreationOption);
         
         if ($siteCreationTime === false) {
-            $rank = Piwik_SEO::makeRankChecker(Piwik_Site::getMainUrlFor($idSite));
+            $rank = Piwik_SEO_ArchiveProcessing::makeRankChecker(Piwik_Site::getMainUrlFor($idSite));
             
             $siteAge = $rank->getAge($prettyFormatAge = false);
             $siteCreationTime = time() - $siteAge;
@@ -100,7 +100,7 @@ class Piwik_SEO_API
     {
         Piwik::checkUserHasSomeViewAccess();
         
-        $rankChecker = Piwik_SEO::makeRankChecker($url);
+        $rankChecker = Piwik_SEO_ArchiveProcessing::makeRankChecker($url);
         $stats = $rankChecker->getAllStats();
         $stats[Piwik_SEO::SITE_AGE_LABEL] = $rankChecker->getAge($prettyFormatAge = true);
         
@@ -162,15 +162,13 @@ class Piwik_SEO_API
         // via HTTP.
         if (!$archive->isQueryingForMultipleSites()
             && !$archive->isQueryingForMultiplePeriods()
+            && reset($periods)->getDateEnd()->getDatetime() == Piwik_Date::factory('today')->getDatetime() // TODO move to private function
+            && !$archive->doArchivesExistFor(Piwik_SEO::$seoMetrics)
         ) { 
-            $haveSeoMetricsBeenArchived = $archive->getNumeric(Piwik_SEO::DONE_ARCHIVE_NAME) == 1;
+            $data = Piwik_PluginsManager::getInstance()->getLoadedPlugin('SEO')->archiveSEOMetrics(reset($siteIds));
             
-            if ($haveSeoMetricsBeenArchived) {
-                $data = Piwik_SEO::archiveSEOMetrics(reset($siteIds));
-                
-                $result = new Piwik_DataTable_Simple();
-                $result->addRow(new Piwik_DataTable_Row(array(Piwik_DataTable_Row::COLUMNS => reset($data))));
-            }
+            $result = new Piwik_DataTable_Simple();
+            $result->addRow(new Piwik_DataTable_Row(array(Piwik_DataTable_Row::COLUMNS => reset($data))));
         }
         
         if (!isset($result)) {

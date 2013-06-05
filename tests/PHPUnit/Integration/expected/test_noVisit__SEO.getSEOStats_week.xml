@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <result>
-	<ggl_page_rank>4</ggl_page_rank>
-	<ggl_indexed_pages>16</ggl_indexed_pages>
+	<google_page_rank>4</google_page_rank>
+	<google_indexed_pages>16</google_indexed_pages>
 	<alexa_rank>8</alexa_rank>
 	<dmoz>12</dmoz>
 	<bing_indexed_pages>20</bing_indexed_pages>
