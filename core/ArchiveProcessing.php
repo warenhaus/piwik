@@ -539,11 +539,15 @@ abstract class Piwik_ArchiveProcessing
      */
     public static function getArchiveNameFor($plugin, $periodType, $segment)
     {
+        $archiveBaseName = null;
+        Piwik_PostEvent('ArchiveProcessing.getArchiveBaseName', $archiveBaseName, $pluginName);
+        // TODO: rest
         $archiveName = $segment->getHash();
         
         if (!self::shouldProcessReportsAllPluginsFor($segment, $periodType)) {
             if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)) { // TODO: when does this code ever get executed?
                 $plugin = 'all';
+                throw new Exception("am I here?");
             }
             
             $archiveName .= '.' . $plugin;
