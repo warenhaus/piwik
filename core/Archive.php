@@ -198,14 +198,14 @@ class Piwik_Archive
     
     /**
      * List of archive IDs for the sites, periods and segment we are querying with.
-     * Archive IDs are indexed by done flag and period, ie:
+     * Archive IDs are indexed by archive name and period, ie:
      * 
      * array(
-     *     'done.Referers' => array(
+     *     'Referers' => array(
      *         '2010-01-01' => 1,
      *         '2010-01-02' => 2,
      *     ),
-     *     'done.VisitsSummary' => array(
+     *     'VisitsSummary' => array(
      *         '2010-01-01' => 3,
      *         '2010-01-02' => 4,
      *     ),
@@ -214,7 +214,7 @@ class Piwik_Archive
      * or,
      * 
      * array(
-     *     'done.all' => array(
+     *     'all' => array(
      *         '2010-01-01' => 1,
      *         '2010-01-02' => 2
      *     )
@@ -556,13 +556,13 @@ class Piwik_Archive
     /**
      * Returns the list of plugins that archive the given reports.
      * 
-     * @param array $archiveNames
+     * @param array $archiveDataNames
      * @return array
      */
-    public function getRequestedPlugins($archiveNames)
+    public function getRequestedPlugins($archiveDataNames)
     {
         $result = array();
-        foreach ($archiveNames as $name) {
+        foreach ($archiveDataNames as $name) {
             $result[] = self::getPluginForReport($name);
         }
         return array_unique($result);
@@ -604,30 +604,31 @@ class Piwik_Archive
     /**
      * Queries archive tables for data and returns the result.
      */
-    private function get($archiveNames, $archiveDataType, $idSubtable = null)
+    private function get($archiveDataNames, $archiveDataType, $idSubtable = null)
     {
-        if (!is_array($archiveNames)) {
-            $archiveNames = array($archiveNames);
+        if (!is_array($archiveDataNames)) {
+            $archiveDataNames = array($archiveDataNames);
         }
         
         // apply idSubtable
         if ($idSubtable !== null
             && $idSubtable != 'all'
         ) {
-            foreach ($archiveNames as &$name) {
+            foreach ($archiveDataNames as &$name) {
                 $name .= "_$idSubtable";
             }
         }
         
         $result = new Piwik_Archive_DataCollection(
-            $archiveNames, $archiveDataType, $this->siteIds, $this->periods, $defaultRow = null);
+            $archiveDataNames, $archiveDataType, $this->siteIds, $this->periods, $defaultRow = null);
         
-        $archiveIds = $this->getArchiveIds($archiveNames);
+        $archiveIds = $this->getArchiveIds($archiveDataNames);
         if (empty($archiveIds)) {
             return $result;
         }
         
-        $archiveData = $this->dataAccess->getArchiveData($archiveIds, $archiveNames, $archiveDataType, $idSubtable);
+        $archiveData = $this->dataAccess->getArchiveData(
+            $archiveIds, $archiveDataNames, $archiveDataType, $idSubtable);
         foreach ($archiveData as $row) {
             // values are grouped by idsite (site ID), date1-date2 (date range), then name (field name)
             $idSite = $row['idsite'];
@@ -653,49 +654,44 @@ class Piwik_Archive
      * query archive tables for IDs w/o launching archiving, or launch archiving and
      * get the idarchive from Piwik_ArchiveProcessing instances.
      */
-    private function getArchiveIds($archiveNames)
+    private function getArchiveIds($archiveDataNames)
     {
-        $plugins = $this->getRequestedPlugins($archiveNames);
+        $plugins = $this->getRequestedPlugins($archiveDataNames);
         
         // figure out which archives haven't been processed (if an archive has been processed,
         // then we have the archive IDs in $this->idarchives)
-        $doneFlags = array();
-        $archiveGroups = array();
+        $archiveNames = array();
+        $archiveNamesToCacheIdsFor = array();
         foreach ($plugins as $plugin) {
-            $doneFlag = $this->getDoneStringForPlugin($plugin);
+            $archiveName = $this->getArchiveNameForPlugin($plugin);
             
-            $doneFlags[$doneFlag] = true;
-            if (!isset($this->idarchives[$doneFlag])) {
-                $archiveGroups[] = $this->getArchiveGroupOfPlugin($plugin);
+            $archiveNames[] = $archiveName;
+            if (!isset($this->idarchives[$archiveName])) {
+                $archiveNamesToCacheIdsFor[] = $archiveName;
+                
+                $this->initializeArchiveIdCache($archiveName);
             }
         }
         
-        $archiveGroups = array_unique($archiveGroups);
-        
         // cache id archives for plugins we haven't processed yet
-        if (!empty($archiveGroups)) {
+        if (!empty($archiveNamesToCacheIdsFor)) {
             if (!$this->isArchivingDisabled()) {
-                $this->cacheArchiveIdsAfterLaunching($archiveGroups, $plugins);
+                $this->cacheArchiveIdsAfterLaunching($archiveNamesToCacheIdsFor, $plugins);
             } else {
                 $this->cacheArchiveIdsWithoutLaunching($plugins);
             }
         }
         
-        // order idarchives by the table month they belong to
-        $idArchivesByMonth = array();
-        foreach (array_keys($doneFlags) as $doneFlag) {
-            if (empty($this->idarchives[$doneFlag])) {
-                continue;
-            }
-            
-            foreach ($this->idarchives[$doneFlag] as $dateRange => $idarchives) {
+        // order idarchives by the date range they belong to
+        $result = array();
+        foreach ($archiveNames as $name) {
+            foreach ($this->idarchives[$name] as $dateRange => $idarchives) {
                 foreach ($idarchives as $id) {
-                    $idArchivesByMonth[$dateRange][] = $id;
+                    $result[$dateRange][] = $id;
                 }
             }
         }
-        
-        return $idArchivesByMonth;
+        return $result;
     }
     
     /**
@@ -703,10 +699,10 @@ class Piwik_Archive
      * This function will launch the archiving process for each period/site/plugin if 
      * metrics/reports have not been calculated/archived already.
      * 
-     * @param array $archiveGroups @see getArchiveGroupOfReport
+     * @param array $archiveNames @see getArchiveNameOfReport
      * @param array $plugins List of plugin names to archive.
      */
-    private function cacheArchiveIdsAfterLaunching($archiveGroups, $plugins)
+    private function cacheArchiveIdsAfterLaunching($archiveNames, $plugins)
     {
         $today = Piwik_Date::today();
         
@@ -745,13 +741,11 @@ class Piwik_Archive
                 $processing->isThereSomeVisits = null;
                 
                 // process for each plugin as well
-                foreach ($archiveGroups as $plugin) {
-                    if ($plugin == 'all') {
+                foreach ($archiveNames as $name) {
+                    $plugin = Piwik_ArchiveProcessing::getPluginFromArchiveName($name);
+                    if (empty($plugin)) {
                         $plugin = reset($plugins);
                     }
-                    
-                    $doneFlag = $this->getDoneStringForPlugin($plugin);
-                    $this->initializeArchiveIdCache($doneFlag);
                     
                     $processing->init();
                     $processing->setRequestedPlugin($plugin);
@@ -767,7 +761,7 @@ class Piwik_Archive
                         continue;
                     }
                     
-                    $this->idarchives[$doneFlag][$periodStr][] = $idArchive;
+                    $this->idarchives[$name][$periodStr][] = $idArchive;
                 }
             }
         }
@@ -785,16 +779,10 @@ class Piwik_Archive
         $idarchivesByReport = $this->dataAccess->getArchiveIds(
             $this->siteIds, $this->periods, $this->segment, $plugins);
         
-        // initialize archive ID cache for each report
-        foreach ($plugins as $plugin) {
-            $doneFlag = $this->getDoneStringForPlugin($plugin);
-            $this->initializeArchiveIdCache($doneFlag);
-        }
-        
-        foreach ($idarchivesByReport as $doneFlag => $idarchivesByDate) {
+        foreach ($idarchivesByReport as $name => $idarchivesByDate) {
             foreach ($idarchivesByDate as $dateRange => $idarchives) {
                 foreach ($idarchives as $idarchive) {
-                    $this->idarchives[$doneFlag][$dateRange][] = $idarchive;
+                    $this->idarchives[$name][$dateRange][] = $idarchive;
                 }
             }
         }
@@ -889,8 +877,8 @@ class Piwik_Archive
     /**
      * Initializes the archive ID cache ($this->idarchives) for a particular 'done' flag.
      * 
-     * It is necessary that each archive ID caching function call this method for each
-     * unique 'done' flag it encounters, since the getArchiveIds function determines
+     * It is necessary that getArchiveIds call this method for each
+     * unique archive name it encounters, since the getArchiveIds function determines
      * whether archiving should be launched based on whether $this->idarchives has a
      * an entry for a specific 'done' flag.
      * 
@@ -898,32 +886,9 @@ class Piwik_Archive
      * entries to the cache. If the archive is used again, SQL will be executed to
      * try and find the archive IDs even though we know there are none.
      */
-    private function initializeArchiveIdCache($doneFlag)
+    private function initializeArchiveIdCache($archiveName)
     {
-        if (!isset($this->idarchives[$doneFlag])) {
-            $this->idarchives[$doneFlag] = array();
-        }
-    }
-    
-    /**
-     * Returns the archiving group identifier given a plugin.
-     * 
-     * More than one plugin can be called at once when archiving. In such a case 
-     * we don't want to launch archiving three times for three plugins if doing 
-     * it once is enough, so getArchiveIds makes sure to get the archive group of
-     * all reports.
-     * 
-     * If the period isn't a range, then all plugins' archiving code is executed.
-     * If the period is a range, then archiving code is executed individually for
-     * each plugin.
-     */
-    private function getArchiveGroupOfPlugin($plugin)
-    {
-        if ($this->getPeriodLabel() != 'range') {
-            return 'all';
-        }
-        
-        return $plugin;
+        $this->idarchives[$archiveName] = array();
     }
     
     /**
@@ -950,6 +915,15 @@ class Piwik_Archive
                                . "to avoid this error.");
         }
         return $plugin;
+    }
+
+    private function getArchiveNameForPlugin($plugin)
+    {
+        $name = Piwik_ArchiveProcessing::getArchiveNameFor($plugin, $this->getPeriodLabel(), $this->segment);
+        if (empty($name)) {
+            return 'all';
+        }
+        return $name;
     }
     
     private function getAsNonEmptyArray($array, $paramName)

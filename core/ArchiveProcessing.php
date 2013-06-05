@@ -506,8 +506,8 @@ abstract class Piwik_ArchiveProcessing
      */
     public function getDoneStringFlag($flagArchiveAsAllPlugins = false)
     {
-        return self::getDoneStringFlagFor(
-            $this->getSegment(), $this->period->getLabel(), $this->getRequestedPlugin(), $flagArchiveAsAllPlugins);
+        $plugin = $flagArchiveAsAllPlugins ? 'all' : $this->getRequestedPlugin();
+        return self::getDoneStringFlagFor($this->getSegment(), $this->period->getLabel(), $plugin);
     }
 
     /**
@@ -516,22 +516,70 @@ abstract class Piwik_ArchiveProcessing
      *
      * @param Piwik_Segment $segment
      * @param string $periodLabel
-     * @param string $plugin
-     * @param bool $flagArchiveAsAllPlugins
+     * @param string $plugin Plugin name or 'all'
      * @return string
      */
-    public static function getDoneStringFlagFor($segment, $periodLabel, $plugin, $flagArchiveAsAllPlugins = false)
+    public static function getDoneStringFlagFor($segment, $periodType, $plugin)
     {
-        $segmentHash = $segment->getHash();
-        if (!self::shouldProcessReportsAllPluginsFor($segment, $periodLabel)) {
-            if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)
-                || $flagArchiveAsAllPlugins
-            ) {
+        return 'done' . self::getArchiveNameFor($plugin, $periodType, $segment);
+    }
+    
+    /**
+     * Returns the name of the archive holding data for specific plugin given a
+     * period type and segment.
+     * 
+     * An archive name is a string that helps to identify a set of archive rows
+     * as one 'archive'. An archive for a site, period and segment is identified
+     * by this name and an int ID.
+     * 
+     * @param string $plugin A plugin or 'all'
+     * @param string $periodType ('day', 'week', 'month', 'year' or 'range')
+     * @param Piwik_Segment $segment
+     * @return string
+     */
+    public static function getArchiveNameFor($plugin, $periodType, $segment)
+    {
+        $archiveName = $segment->getHash();
+        
+        if (!self::shouldProcessReportsAllPluginsFor($segment, $periodType)) {
+            if (!Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)) { // TODO: when does this code ever get executed?
                 $plugin = 'all';
             }
-            $segmentHash .= '.' . $plugin;
+            
+            $archiveName .= '.' . $plugin;
         }
-        return 'done' . $segmentHash;
+        
+        return $archiveName;
+    }
+    
+    /**
+     * Returns the plugin name from an archive name, or false if it cannot get one.
+     * If this method cannot find a plugin name, we can assume the archive holds
+     * data for all plugins.
+     * 
+     * @param string $archiveName
+     * @return string|false
+     */
+    public static function getPluginFromArchiveName($archiveName)
+    {
+        $lastPart = substr($archiveName, strrpos($archiveName, '.') + 1);
+        
+        if (Piwik_PluginsManager::getInstance()->isPluginActivated($lastPart)) {
+            return $lastPart;
+        } else {
+            return false; // not a valid plugin name
+        }
+    }
+    
+    /**
+     * Returns the archive name for a given done string flag.
+     * 
+     * @param string $doneFlag
+     * @return string
+     */
+    public static function getArchiveNameFromDoneStringFlag($doneFlag)
+    {
+        return substr($doneFlag, 5);
     }
 
     /**

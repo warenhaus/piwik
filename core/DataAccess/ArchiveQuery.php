@@ -11,6 +11,11 @@
 
 /**
  * Data Access object used to query archive data.
+ * 
+ * TODO: when implementing data access layer, archive should only be identified by 
+ * archive name. currently it is required that the underlying data store assign an
+ * ID to each archive, but it is not conceptually required that they have one. also
+ * done string flags should be handled by the data access layer as well.
  */
 class Piwik_DataAccess_ArchiveQuery
 {
@@ -67,7 +72,11 @@ class Piwik_DataAccess_ArchiveQuery
             
             // get the archive IDs
             foreach (Piwik_FetchAll($sql, $bind) as $row) {
-                $archiveName = $row['name'];
+                $archiveName = Piwik_ArchiveProcessing::getArchiveNameFromDoneStringFlag($row['name']);
+                if (empty($archiveName)) {
+                    $archiveName = 'all';
+                }
+                
                 $dateStr = $row['date1'].",".$row['date2'];
                 
                 $result[$archiveName][$dateStr][] = $row['idarchive'];
@@ -144,7 +153,7 @@ class Piwik_DataAccess_ArchiveQuery
         $doneFlags = array();
         foreach ($plugins as $plugin) {
             $done = Piwik_ArchiveProcessing::getDoneStringFlagFor($segment, $periodType, $plugin);
-            $donePlugins = Piwik_ArchiveProcessing::getDoneStringFlagFor($segment, $periodType, $plugin, true);
+            $donePlugins = Piwik_ArchiveProcessing::getDoneStringFlagFor($segment, $periodType, 'all');
             
             $doneFlags[$done] = $done;
             $doneFlags[$donePlugins] = $donePlugins;
