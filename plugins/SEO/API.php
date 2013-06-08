@@ -183,12 +183,36 @@ class Piwik_SEO_API
         // reset datatable period metadata to be the non-day periods if data for non-day periods
         // were requested
         if ($period != 'day') {
-            // TODO: no way to do this w/o a hacky check for Piwik_DataTable_Array::getKeyName() == 'date'.
-            //        can be removed if Piwik_DataTable_Array is removed.
+            $result = $this->resetPeriodMetadataAndLabels($result, $originalPeriodsByEndDate);
         }
         
         $result->filter('ColumnCallbackAddColumn', array(array(), 'label', 'Piwik_Translate', array('SEO_Stats_js')));
         return $result;
+    }
+    
+    /**
+     * TODO
+     */
+    private function resetPeriodMetadataAndLabels($table, $originalPeriods)
+    {
+        if ($table instanceof Piwik_DataTable_Array) {
+            $result = $table->getEmptyClone();
+            foreach ($table->getArray() as $key => $childTable) {
+                $newTable = $this->resetPeriodMetadataAndLabels($childTable, $originalPeriods);
+                
+                if ($result->getKeyName() == 'date') {
+                    $key = $originalPeriods[$key]->getPrettyString();
+                }
+                
+                $result->addTable($newTable, $key);
+            }
+            return $result;
+        } else {
+            $dayDateString = $table->getMetadata('period')->getDateEnd()->toString();
+            $table->setMetadata('period', $originalPeriods[$dayDateString]);
+            
+            return $table;
+        }
     }
 
     private function splitColumnsIntoRows($table)
