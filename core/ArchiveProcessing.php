@@ -563,6 +563,10 @@ abstract class Piwik_ArchiveProcessing
         //       in Archive.php?
         if (!empty($archiveBaseName)) {
             $archiveNameParts[] = $archiveBaseName;
+            
+            if ($plugin == 'all') {
+                $archiveNameParts[] = 'all';
+            }
         } else if (!self::shouldProcessReportsAllPluginsFor($segment, $periodType)) {
             $archiveNameParts[] = $plugin;
         }

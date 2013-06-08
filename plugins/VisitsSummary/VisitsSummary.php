@@ -44,8 +44,11 @@ class Piwik_VisitsSummary extends Piwik_Plugin
      * Event handler for Archive.getPluginNameForMetric. Checks if a metric is a
      * core metric.
      */
-    public function getPluginNameForMetric(&$pluginName, $metricName)
+    public function getPluginNameForMetric($notification)
     {
+        $pluginName = &$notification->getNotificationObject();
+        $metricName = $notification->getNotificationInfo();
+        
         if (empty($pluginName	)
             && (in_array($metricName, Piwik_ArchiveProcessing::getCoreMetrics())
                 || $metricName == 'max_actions')

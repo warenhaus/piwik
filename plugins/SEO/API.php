@@ -150,8 +150,13 @@ class Piwik_SEO_API
         
         // TODO: code redundancy w/ Archive.php (everything above this line)
         if ($period != 'day') {
+            $originalPeriodsByEndDate = array();
+            
             foreach ($periods as &$oPeriod) {
-                $oPeriod = Piwik_Period::factory('day', $oPeriod->getDateEnd());
+                $endDate = $oPeriod->getDateEnd();
+                $originalPeriodsByEndDate[$endDate->toString()] = $oPeriod;
+                
+                $oPeriod = Piwik_Period::factory('day', $endDate);
             }
         }
         
@@ -162,7 +167,7 @@ class Piwik_SEO_API
         // via HTTP.
         if (!$archive->isQueryingForMultipleSites()
             && !$archive->isQueryingForMultiplePeriods()
-            && reset($periods)->getDateEnd()->getDatetime() == Piwik_Date::factory('today')->getDatetime() // TODO move to private function
+            && reset($periods)->getDateEnd()->isToday()
             && !$archive->doArchivesExistFor(Piwik_SEO::$seoMetrics)
         ) { 
             $data = Piwik_PluginsManager::getInstance()->getLoadedPlugin('SEO')->archiveSEOMetrics(reset($siteIds));
@@ -173,6 +178,13 @@ class Piwik_SEO_API
         
         if (!isset($result)) {
             $result = $archive->getDataTableFromNumeric(Piwik_SEO::$seoMetrics);
+        }
+        
+        // reset datatable period metadata to be the non-day periods if data for non-day periods
+        // were requested
+        if ($period != 'day') {
+            // TODO: no way to do this w/o a hacky check for Piwik_DataTable_Array::getKeyName() == 'date'.
+            //        can be removed if Piwik_DataTable_Array is removed.
         }
         
         $result->filter('ColumnCallbackAddColumn', array(array(), 'label', 'Piwik_Translate', array('SEO_Stats_js')));

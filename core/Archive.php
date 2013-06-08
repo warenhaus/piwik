@@ -920,7 +920,7 @@ class Piwik_Archive
     public static function getPluginForReport($archiveName)
     {
         $plugin = false;
-        Piwik_PostEvent('Archive.getPluginNameForMetric', array(&$plugin, $archiveName));
+        Piwik_PostEvent('Archive.getPluginNameForMetric', $plugin, $archiveName);
         
         if (empty($plugin)) {
             $plugin = substr($archiveName, 0, strpos($archiveName, '_'));

@@ -7,8 +7,8 @@
 		<action>getSEOStats</action>
 		<dimension>Value</dimension>
 		<metrics>
-			<ggl_page_rank>Google PageRank</ggl_page_rank>
-			<ggl_indexed_pages>Google indexed pages</ggl_indexed_pages>
+			<google_page_rank>Google PageRank</google_page_rank>
+			<google_indexed_pages>Google indexed pages</google_indexed_pages>
 			<alexa_rank>Alexa Rank</alexa_rank>
 			<dmoz>DMOZ entries</dmoz>
 			<bing_indexed_pages>Bing indexed pages</bing_indexed_pages>

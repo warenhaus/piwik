@@ -15,16 +15,6 @@
  */
 class Piwik_VisitFrequency extends Piwik_Plugin
 {
-    public static $visitFrequencyMetrics = array(
-        'nb_uniq_visitors_returning',
-        'nb_visits_returning',
-        'nb_actions_returning',
-        'max_actions_returning',
-        'sum_visit_length_returning',
-        'bounce_count_returning',
-        'nb_visits_converted_returning',
-    );
-    
     public function getInformation()
     {
         $info = array(
@@ -42,24 +32,8 @@ class Piwik_VisitFrequency extends Piwik_Plugin
             'WidgetsList.add'                  => 'addWidgets',
             'Menu.add'                         => 'addMenu',
             'API.getReportMetadata'            => 'getReportMetadata',
-            'Archive.getPluginNameForMetric'   => 'getPluginNameForMetric',
         );
         return $hooks;
-    }
-
-    /**
-     * Checks if a metric is calculated by the VisitFrequency plugin.
-     */
-    public function getPluginNameForMetric( $notification )
-    {
-        $pluginName =& $notification->getNotificationObject();
-        $metricName = $notification->getNotificationInfo();
-        
-        if (empty($pluginName)
-            && in_array($metricName, self::$visitFrequencyMetrics)
-        ) {
-            $pluginName = 'VisitFrequency';
-        }
     }
     
     /**

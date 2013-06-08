@@ -66,8 +66,11 @@ class Piwik_Actions extends Piwik_Plugin
      * Event handler for Archive.getPluginNameForMetric. Checks if a metric is an
      * Actions metric.
      */
-    public function getPluginNameForMetric(&$pluginName, $metricName)
+    public function getPluginNameForMetric($notification)
     {
+        $pluginName = &$notification->getNotificationObject();
+        $metricName = $notification->getNotificationInfo();
+        
         if (empty($pluginName	)
             && in_array($metricName, self::$actionsMetrics)
         ) {
