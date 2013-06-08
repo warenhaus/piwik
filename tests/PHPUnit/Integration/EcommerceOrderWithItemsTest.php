@@ -13,6 +13,18 @@ class Test_Piwik_Integration_EcommerceOrderWithItems extends IntegrationTestCase
 {
     public static $fixture = null; // initialized below class definition
 
+    public static function setUpBeforeClass()
+    {
+        parent::setUpBeforeClass();
+        
+        $seoPlugin = Piwik_PluginsManager::getInstance()->getLoadedPlugin('SEO');
+        
+        $date = Piwik_Date::factory(self::$fixture->dateTime);
+        for ($i = 0; $i != 30; ++$i) {
+            $seoPlugin->archiveSEOMetrics($idSite = false, $date->addDay($i));
+        }
+    }
+
     /**
      * @group        Integration
      * @group        EcommerceOrderWithItems

@@ -512,6 +512,12 @@ abstract class Piwik_ArchiveProcessing
      */
     public function getDoneStringFlag($flagArchiveAsAllPlugins = false)
     {
+        if (!$flagArchiveAsAllPlugins
+            && !Piwik_PluginsManager::getInstance()->isPluginLoaded($this->getRequestedPlugin())
+        ) { // sanity check
+            throw new Exception("Plugin for archive is not loaded!");
+        }
+        
         return self::getDoneStringFlagFor(
             $this->getSegment(), $this->period->getLabel(), $this->getRequestedPlugin(), $flagArchiveAsAllPlugins);
     }
@@ -545,12 +551,6 @@ abstract class Piwik_ArchiveProcessing
      */
     public static function getArchiveNameFor($plugin, $periodType, $segment, $flagArchiveAsAllPlugins = false)
     {
-        if (!$flagArchiveAsAllPlugins
-            && !Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)
-        ) { // sanity check
-            throw new Exception("Plugin for archive is not loaded!");
-        }
-        
         $archiveNameParts = array($segment->getHash());
         
         $archiveBaseName = null;
