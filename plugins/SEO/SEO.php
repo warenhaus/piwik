@@ -20,6 +20,7 @@ require_once PIWIK_INCLUDE_PATH . '/plugins/SEO/ArchiveProcessing.php';
 class Piwik_SEO extends Piwik_Plugin
 {
     /** Archive names for SEO metrics. */
+    // TODO: use SEO_ prefix for metric names? no need for getPluginNameForMetric event handler, then.
     const GOOGLE_PAGE_RANK_METRIC_NAME = 'google_page_rank';
     const GOOGLE_INDEXED_PAGE_COUNT = 'google_indexed_pages';
     const ALEXA_RANK_METRIC_NAME = 'alexa_rank';

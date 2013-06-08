@@ -66,11 +66,8 @@ class Piwik_Actions extends Piwik_Plugin
      * Event handler for Archive.getPluginNameForMetric. Checks if a metric is an
      * Actions metric.
      */
-    public function getPluginNameForMetric( $notification )
+    public function getPluginNameForMetric(&$pluginName, $metricName)
     {
-        $pluginName =& $notification->getNotificationObject();
-        $metricName = $notification->getNotificationInfo();
-        
         if (empty($pluginName	)
             && in_array($metricName, self::$actionsMetrics)
         ) {
@@ -599,20 +596,6 @@ class Piwik_Actions extends Piwik_Plugin
 
 
     /**
-     * @param Piwik_Event_Notification $notification  notification object
-     * @return mixed
-     */
-    function archivePeriod($notification)
-    {
-        $archiveProcessing = $notification->getNotificationObject();
-
-        if (!$archiveProcessing->shouldProcessReportsForPlugin($this->getPluginName())) return;
-
-        $actionsArchiving = new Piwik_Actions_Archiving($archiveProcessing->idsite);
-        return $actionsArchiving->archivePeriod($archiveProcessing);
-    }
-
-    /**
      * Compute all the actions along with their hierarchies.
      *
      * For each action we process the "interest statistics" :
@@ -625,10 +608,20 @@ class Piwik_Actions extends Piwik_Plugin
         /* @var $archiveProcessing Piwik_ArchiveProcessing_Day */
         $archiveProcessing = $notification->getNotificationObject();
 
-        if (!$archiveProcessing->shouldProcessReportsForPlugin($this->getPluginName())) return;
+        $archiving = new Piwik_Actions_Archiver($archiveProcessing);
+        if($archiving->shouldArchive()) {
+            $archiving->archiveDay();
+        }
+    }
 
-        $actionsArchiving = new Piwik_Actions_Archiving($archiveProcessing->idsite);
-        return $actionsArchiving->archiveDay($archiveProcessing);
+    function archivePeriod($notification)
+    {
+        $archiveProcessing = $notification->getNotificationObject();
+
+        $archiving = new Piwik_Actions_Archiver($archiveProcessing);
+        if($archiving->shouldArchive()) {
+            $archiving->archivePeriod();
+        }
     }
 
     static public function checkCustomVariablesPluginEnabled()

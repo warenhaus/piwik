@@ -33,6 +33,14 @@ class Piwik_Goals_Controller extends Piwik_Controller
 
     private function formatConversionRate($conversionRate)
     {
+        if ($conversionRate instanceof Piwik_DataTable) {
+            if ($conversionRate->getRowsCount() == 0) {
+                $conversionRate = 0;
+            } else {
+                $columns = $conversionRate->getFirstRow()->getColumns();
+                $conversionRate = (float)reset($columns);
+            }
+        }
         return sprintf('%.' . self::CONVERSION_RATE_PRECISION . 'f%%', $conversionRate);
     }
 
@@ -185,14 +193,20 @@ class Piwik_Goals_Controller extends Piwik_Controller
         $view->graphEvolution = $this->getEvolutionGraph(true, array('nb_conversions'), $idGoal);
         $view->nameGraphEvolution = 'GoalsgetEvolutionGraph' . $idGoal;
         $view->topDimensions = $this->getTopDimensions($idGoal);
+        
+        $goalsApi = Piwik_Goals_API::getInstance();
+        $period = Piwik_Common::getRequestVar('period');
+        $date = Piwik_Common::getRequestVar('date');
 
         // conversion rate for new and returning visitors
         $segment = 'visitorType==returning,visitorType==returningCustomer';
-        $conversionRateReturning = Piwik_Goals_API::getInstance()->getConversionRate($this->idSite, Piwik_Common::getRequestVar('period'), Piwik_Common::getRequestVar('date'), $segment, $idGoal);
+        $conversionRateReturning = $goalsApi->getConversionRate($this->idSite, $period, $date, $segment, $idGoal);
         $view->conversion_rate_returning = $this->formatConversionRate($conversionRateReturning);
+        
         $segment = 'visitorType==new';
-        $conversionRateNew = Piwik_Goals_API::getInstance()->getConversionRate($this->idSite, Piwik_Common::getRequestVar('period'), Piwik_Common::getRequestVar('date'), $segment, $idGoal);
+        $conversionRateNew = $goalsApi->getConversionRate($this->idSite, $period, $date, $segment, $idGoal);
         $view->conversion_rate_new = $this->formatConversionRate($conversionRateNew);
+        
         $view->goalReportsByDimension = $this->getGoalReportsByDimensionTable(
             $view->nb_conversions, isset($ecommerce), !empty($view->cart_nb_conversions));
         return $view;
@@ -361,7 +375,7 @@ class Piwik_Goals_Controller extends Piwik_Controller
 
         $keywordNotDefinedString = '';
         if (Piwik_PluginsManager::getInstance()->isPluginActivated('Referers')) {
-            $keywordNotDefinedString = Piwik_Referers::getKeywordNotDefinedString();
+            $keywordNotDefinedString = Piwik_Referers_API::getKeywordNotDefinedString();
             $topDimensionsToLoad += array(
                 'keyword' => 'Referers.getKeywords',
                 'website' => 'Referers.getWebsites',
@@ -458,7 +472,7 @@ class Piwik_Goals_Controller extends Piwik_Controller
         $view->setSortedColumn('label', 'asc');
         $view->setColumnTranslation('label', Piwik_Translate('Goals_VisitsUntilConv'));
         $view->setColumnTranslation('nb_conversions', Piwik_Translate('Goals_ColumnConversions'));
-        $view->setLimit(count(Piwik_Goals::$visitCountRanges));
+        $view->setLimit(count(Piwik_Goals_Archiver::$visitCountRanges));
         $view->disableOffsetInformationAndPaginationControls();
         $view->disableShowAllViewsIcons();
         return $this->renderView($view, $fetch);
@@ -480,7 +494,7 @@ class Piwik_Goals_Controller extends Piwik_Controller
         $view->setColumnTranslation('label', Piwik_Translate('Goals_DaysToConv'));
         $view->setColumnTranslation('nb_conversions', Piwik_Translate('Goals_ColumnConversions'));
         $view->disableShowAllViewsIcons();
-        $view->setLimit(count(Piwik_Goals::$daysToConvRanges));
+        $view->setLimit(count(Piwik_Goals_Archiver::$daysToConvRanges));
         $view->disableOffsetInformationAndPaginationControls();
         return $this->renderView($view, $fetch);
     }

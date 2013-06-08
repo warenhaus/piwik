@@ -159,8 +159,7 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
      *                                          ie (AND, OR, etc.).
      * @return array  An array of SQL SELECT expressions.
      */
-    public static function buildReduceByRangeSelect(
-        $column, $ranges, $table, $selectColumnPrefix = '', $extraCondition = false)
+    public static function buildReduceByRangeSelect( $column, $ranges, $table, $selectColumnPrefix = '', $extraCondition = false)
     {
         $selects = array();
 
@@ -507,7 +506,7 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
      * @param string|array $label
      * @param string $where
      * @param array $aggregateLabels
-     * @return
+     * @return PDOStatement
      */
     public function queryConversionsByDimension($label, $where = '', $aggregateLabels = array())
     {
@@ -651,76 +650,17 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
      * @param string $label  Table log_visit field name to be use to compute common stats
      * @return array
      */
-    public function getArrayInterestForLabel($label)
+    public function getMetricsForLabel($label)
     {
         $query = $this->queryVisitsByDimension($label);
-        $interest = array();
+        $metrics = array();
         while ($row = $query->fetch()) {
-            if (!isset($interest[$row['label']])) $interest[$row['label']] = $this->getNewInterestRow();
-            $this->updateInterestStats($row, $interest[$row['label']]);
-        }
-        return $interest;
-    }
-
-    /**
-     * Generates a dataTable given a multidimensional PHP array that associates LABELS to Piwik_DataTableRows
-     * This is used for the "Actions" DataTable, where a line is the aggregate of all the subtables
-     * Example: the category /blog has 3 visits because it has /blog/index (2 visits) + /blog/about (1 visit)
-     *
-     * @param array $table
-     * @param array $parents
-     * @return Piwik_DataTable
-     */
-    static public function generateDataTable($table, $parents = array())
-    {
-        $dataTableToReturn = new Piwik_DataTable();
-        foreach ($table as $label => $maybeDatatableRow) {
-            // case the aInfo is a subtable-like array
-            // it means that we have to go recursively and process it
-            // then we build the row that is an aggregate of all the children
-            // and we associate this row to the subtable
-            if (!($maybeDatatableRow instanceof Piwik_DataTable_Row)) {
-                array_push($parents, array($dataTableToReturn->getId(), $label));
-
-                $subTable = self::generateDataTable($maybeDatatableRow, $parents);
-                $subTable->setParents($parents);
-                $row = new Piwik_DataTable_Row_DataTableSummary($subTable);
-                $row->setColumns(array('label' => $label) + $row->getColumns());
-                $row->addSubtable($subTable);
-
-                array_pop($parents);
-            } // if aInfo is a simple Row we build it
-            else {
-                $row = $maybeDatatableRow;
+            if (!isset($metrics[$row['label']])) {
+                $metrics[$row['label']] = $this->makeEmptyRow();
             }
-
-            if ($row->getMetadata('issummaryrow') == true) {
-                $row->deleteMetadata('issummaryrow');
-                $dataTableToReturn->addSummaryRow($row);
-            } else {
-                $dataTableToReturn->addRow($row);
-            }
+            $this->sumMetrics($row, $metrics[$row['label']]);
         }
-        return $dataTableToReturn;
-    }
-
-    /**
-     * Helper function that returns the serialized DataTable of the given PHP array.
-     * The array must have the format of Piwik_DataTable::addRowsFromArrayWithIndexLabel()
-     * Example:    array (
-     *                    LABEL => array(col1 => X, col2 => Y),
-     *                    LABEL2 => array(col1 => X, col2 => Y),
-     *                )
-     *
-     * @param array $array  at the given format
-     * @return array  Array with one element: the serialized data table string
-     */
-    public function getDataTableSerialized($array)
-    {
-        $table = new Piwik_DataTable();
-        $table->addRowsFromArrayWithIndexLabel($array);
-        $toReturn = $table->getSerialized();
-        return $toReturn;
+        return $metrics;
     }
 
 
@@ -765,23 +705,12 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
     }
 
     /**
-     * Returns an empty row containing default values for the common stat
+     * Returns an empty row containing default metrics
      *
-     * @param bool $onlyMetricsAvailableInActionsTable
-     * @param bool $doNotSumVisits
      * @return array
      */
-    public function getNewInterestRow($onlyMetricsAvailableInActionsTable = false, $doNotSumVisits = false)
+    public function makeEmptyRow()
     {
-        if ($onlyMetricsAvailableInActionsTable) {
-            if ($doNotSumVisits) {
-                return array(Piwik_Archive::INDEX_NB_ACTIONS => 0);
-            }
-            return array(
-                Piwik_Archive::INDEX_NB_UNIQ_VISITORS => 0,
-                Piwik_Archive::INDEX_NB_VISITS        => 0,
-                Piwik_Archive::INDEX_NB_ACTIONS       => 0);
-        }
         return array(Piwik_Archive::INDEX_NB_UNIQ_VISITORS    => 0,
                      Piwik_Archive::INDEX_NB_VISITS           => 0,
                      Piwik_Archive::INDEX_NB_ACTIONS          => 0,
@@ -794,18 +723,63 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
 
 
     /**
+     * Returns an empty row tracking only Actions
+     *
+     * @return array
+     */
+    public function makeEmptyActionRow()
+    {
+        return array(
+            Piwik_Archive::INDEX_NB_UNIQ_VISITORS    => 0,
+            Piwik_Archive::INDEX_NB_VISITS           => 0,
+            Piwik_Archive::INDEX_NB_ACTIONS          => 0,
+        );
+    }
+
+    /**
+     * @param $idGoal
+     * @return array
+     */
+    public function makeEmptyGoalRow($idGoal)
+    {
+        if ($idGoal > Piwik_Tracker_GoalManager::IDGOAL_ORDER) {
+            return array(Piwik_Archive::INDEX_GOAL_NB_CONVERSIONS      => 0,
+                         Piwik_Archive::INDEX_GOAL_NB_VISITS_CONVERTED => 0,
+                         Piwik_Archive::INDEX_GOAL_REVENUE             => 0,
+            );
+        }
+        if ($idGoal == Piwik_Tracker_GoalManager::IDGOAL_ORDER) {
+            return array(Piwik_Archive::INDEX_GOAL_NB_CONVERSIONS             => 0,
+                         Piwik_Archive::INDEX_GOAL_NB_VISITS_CONVERTED        => 0,
+                         Piwik_Archive::INDEX_GOAL_REVENUE                    => 0,
+                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_REVENUE_SUBTOTAL => 0,
+                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_REVENUE_TAX      => 0,
+                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_REVENUE_SHIPPING => 0,
+                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_REVENUE_DISCOUNT => 0,
+                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_ITEMS            => 0,
+            );
+        }
+        // idGoal == Piwik_Tracker_GoalManager::IDGOAL_CART
+        return array(Piwik_Archive::INDEX_GOAL_NB_CONVERSIONS      => 0,
+                     Piwik_Archive::INDEX_GOAL_NB_VISITS_CONVERTED => 0,
+                     Piwik_Archive::INDEX_GOAL_REVENUE             => 0,
+                     Piwik_Archive::INDEX_GOAL_ECOMMERCE_ITEMS     => 0,
+        );
+    }
+
+    /**
      * Returns a Piwik_DataTable_Row containing default values for common stat,
      * plus a column 'label' with the value $label
      *
      * @param string $label
      * @return Piwik_DataTable_Row
      */
-    public function getNewInterestRowLabeled($label)
+    public function makeEmptyRowLabeled($label)
     {
         return new Piwik_DataTable_Row(
             array(
                  Piwik_DataTable_Row::COLUMNS => array('label' => $label)
-                     + $this->getNewInterestRow()
+                     + $this->makeEmptyRow()
             )
         );
     }
@@ -821,16 +795,14 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
      *
      * @return void
      */
-    public function updateInterestStats($newRowToAdd, &$oldRowToUpdate, $onlyMetricsAvailableInActionsTable = false, $doNotSumVisits = false)
+    public function sumMetrics($newRowToAdd, &$oldRowToUpdate, $onlyMetricsAvailableInActionsTable = false)
     {
         // Pre 1.2 format: string indexed rows are returned from the DB
         // Left here for Backward compatibility with plugins doing custom SQL queries using these metrics as string
         if (!isset($newRowToAdd[Piwik_Archive::INDEX_NB_VISITS])) {
-            if (!$doNotSumVisits) {
-                $oldRowToUpdate[Piwik_Archive::INDEX_NB_UNIQ_VISITORS] += $newRowToAdd['nb_uniq_visitors'];
-                $oldRowToUpdate[Piwik_Archive::INDEX_NB_VISITS] += $newRowToAdd['nb_visits'];
-            }
+            $oldRowToUpdate[Piwik_Archive::INDEX_NB_VISITS] += $newRowToAdd['nb_visits'];
             $oldRowToUpdate[Piwik_Archive::INDEX_NB_ACTIONS] += $newRowToAdd['nb_actions'];
+            $oldRowToUpdate[Piwik_Archive::INDEX_NB_UNIQ_VISITORS] += $newRowToAdd['nb_uniq_visitors'];
             if ($onlyMetricsAvailableInActionsTable) {
                 return;
             }
@@ -840,22 +812,14 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
             $oldRowToUpdate[Piwik_Archive::INDEX_NB_VISITS_CONVERTED] += $newRowToAdd['nb_visits_converted'];
             return;
         }
-        if (!$doNotSumVisits) {
-            $oldRowToUpdate[Piwik_Archive::INDEX_NB_UNIQ_VISITORS] += $newRowToAdd[Piwik_Archive::INDEX_NB_UNIQ_VISITORS];
-            $oldRowToUpdate[Piwik_Archive::INDEX_NB_VISITS] += $newRowToAdd[Piwik_Archive::INDEX_NB_VISITS];
-        }
+
+        $oldRowToUpdate[Piwik_Archive::INDEX_NB_VISITS] += $newRowToAdd[Piwik_Archive::INDEX_NB_VISITS];
         $oldRowToUpdate[Piwik_Archive::INDEX_NB_ACTIONS] += $newRowToAdd[Piwik_Archive::INDEX_NB_ACTIONS];
-
-        // Hack for Price tracking on Ecommerce product/category pages
-        // The price is not summed, but AVG is taken in the SQL query
-        $index = Piwik_Archive::INDEX_ECOMMERCE_ITEM_PRICE_VIEWED;
-        if (!empty($newRowToAdd[$index])) {
-            $oldRowToUpdate[$index] = (float)$newRowToAdd[$index];
-        }
-
+        $oldRowToUpdate[Piwik_Archive::INDEX_NB_UNIQ_VISITORS] += $newRowToAdd[Piwik_Archive::INDEX_NB_UNIQ_VISITORS];
         if ($onlyMetricsAvailableInActionsTable) {
             return;
         }
+
         $oldRowToUpdate[Piwik_Archive::INDEX_MAX_ACTIONS] = (float)max($newRowToAdd[Piwik_Archive::INDEX_MAX_ACTIONS], $oldRowToUpdate[Piwik_Archive::INDEX_MAX_ACTIONS]);
         $oldRowToUpdate[Piwik_Archive::INDEX_SUM_VISIT_LENGTH] += $newRowToAdd[Piwik_Archive::INDEX_SUM_VISIT_LENGTH];
         $oldRowToUpdate[Piwik_Archive::INDEX_BOUNCE_COUNT] += $newRowToAdd[Piwik_Archive::INDEX_BOUNCE_COUNT];
@@ -867,7 +831,7 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
      * Given an array of stats, it will process the sum of goal conversions
      * and sum of revenue and add it in the stats array in two new fields.
      *
-     * @param array $interestByLabel Passed by reference, it will be modified as follows:
+     * @param array $metricsByLabel Passed by reference, it will be modified as follows:
      * Input:
      *        array(
      *            LABEL  => array( Piwik_Archive::INDEX_NB_VISITS => X,
@@ -894,11 +858,11 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
      *            );
      *        )
      *
-     * @param array $interestByLabel  Passed by reference, will be modified
+     * @param array $metricsByLabel  Passed by reference, will be modified
      */
-    function enrichConversionsByLabelArray(&$interestByLabel)
+    function enrichMetricsWithConversions(&$metricsByLabel)
     {
-        foreach ($interestByLabel as $label => &$values) {
+        foreach ($metricsByLabel as $label => &$values) {
             if (isset($values[Piwik_Archive::INDEX_GOALS])) {
                 // When per goal metrics are processed, general 'visits converted' is not meaningful because
                 // it could differ from the sum of each goal conversions
@@ -924,12 +888,12 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
 
     /**
      *
-     * @param array $interestByLabelAndSubLabel  Passed by reference, will be modified
+     * @param array $metricsByLabelAndSubLabel  Passed by reference, will be modified
      */
-    function enrichConversionsByLabelArrayHasTwoLevels(&$interestByLabelAndSubLabel)
+    function enrichPivotMetricsWithConversions(&$metricsByLabelAndSubLabel)
     {
-        foreach ($interestByLabelAndSubLabel as $mainLabel => &$interestBySubLabel) {
-            $this->enrichConversionsByLabelArray($interestBySubLabel);
+        foreach ($metricsByLabelAndSubLabel as $mainLabel => &$metricsBySubLabel) {
+            $this->enrichMetricsWithConversions($metricsBySubLabel);
         }
     }
 
@@ -938,7 +902,7 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
      * @param $newRowToAdd
      * @param $oldRowToUpdate
      */
-    function updateGoalStats($newRowToAdd, &$oldRowToUpdate)
+    function sumGoalMetrics($newRowToAdd, &$oldRowToUpdate)
     {
         $oldRowToUpdate[Piwik_Archive::INDEX_GOAL_NB_CONVERSIONS] += $newRowToAdd[Piwik_Archive::INDEX_GOAL_NB_CONVERSIONS];
         $oldRowToUpdate[Piwik_Archive::INDEX_GOAL_NB_VISITS_CONVERTED] += $newRowToAdd[Piwik_Archive::INDEX_GOAL_NB_VISITS_CONVERTED];
@@ -958,35 +922,4 @@ class Piwik_ArchiveProcessing_Day extends Piwik_ArchiveProcessing
         }
     }
 
-    /**
-     *
-     * @param $idGoal
-     * @return array
-     */
-    function getNewGoalRow($idGoal)
-    {
-        if ($idGoal > Piwik_Tracker_GoalManager::IDGOAL_ORDER) {
-            return array(Piwik_Archive::INDEX_GOAL_NB_CONVERSIONS      => 0,
-                         Piwik_Archive::INDEX_GOAL_NB_VISITS_CONVERTED => 0,
-                         Piwik_Archive::INDEX_GOAL_REVENUE             => 0,
-            );
-        }
-        if ($idGoal == Piwik_Tracker_GoalManager::IDGOAL_ORDER) {
-            return array(Piwik_Archive::INDEX_GOAL_NB_CONVERSIONS             => 0,
-                         Piwik_Archive::INDEX_GOAL_NB_VISITS_CONVERTED        => 0,
-                         Piwik_Archive::INDEX_GOAL_REVENUE                    => 0,
-                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_REVENUE_SUBTOTAL => 0,
-                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_REVENUE_TAX      => 0,
-                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_REVENUE_SHIPPING => 0,
-                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_REVENUE_DISCOUNT => 0,
-                         Piwik_Archive::INDEX_GOAL_ECOMMERCE_ITEMS            => 0,
-            );
-        }
-        // $row['idgoal'] == Piwik_Tracker_GoalManager::IDGOAL_CART
-        return array(Piwik_Archive::INDEX_GOAL_NB_CONVERSIONS      => 0,
-                     Piwik_Archive::INDEX_GOAL_NB_VISITS_CONVERTED => 0,
-                     Piwik_Archive::INDEX_GOAL_REVENUE             => 0,
-                     Piwik_Archive::INDEX_GOAL_ECOMMERCE_ITEMS     => 0,
-        );
-    }
 }
