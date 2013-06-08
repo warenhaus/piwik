@@ -512,8 +512,8 @@ abstract class Piwik_ArchiveProcessing
      */
     public function getDoneStringFlag($flagArchiveAsAllPlugins = false)
     {
-        $plugin = $flagArchiveAsAllPlugins ? 'all' : $this->getRequestedPlugin();
-        return self::getDoneStringFlagFor($this->getSegment(), $this->period->getLabel(), $plugin);
+        return self::getDoneStringFlagFor(
+            $this->getSegment(), $this->period->getLabel(), $this->getRequestedPlugin(), $flagArchiveAsAllPlugins);
     }
 
     /**
@@ -525,9 +525,9 @@ abstract class Piwik_ArchiveProcessing
      * @param string $plugin Plugin name or 'all'
      * @return string
      */
-    public static function getDoneStringFlagFor($segment, $periodType, $plugin)
+    public static function getDoneStringFlagFor($segment, $periodType, $plugin, $flagArchiveAsAllPlugins = false)
     {
-        return 'done' . self::getArchiveNameFor($plugin, $periodType, $segment);
+        return 'done' . self::getArchiveNameFor($plugin, $periodType, $segment, $flagArchiveAsAllPlugins);
     }
     
     /**
@@ -543,9 +543,9 @@ abstract class Piwik_ArchiveProcessing
      * @param Piwik_Segment $segment
      * @return string
      */
-    public static function getArchiveNameFor($plugin, $periodType, $segment)
+    public static function getArchiveNameFor($plugin, $periodType, $segment, $flagArchiveAsAllPlugins = false)
     {
-        if ($plugin != 'all'
+        if (!$flagArchiveAsAllPlugins
             && !Piwik_PluginsManager::getInstance()->isPluginLoaded($plugin)
         ) { // sanity check
             throw new Exception("Plugin for archive is not loaded!");
@@ -564,7 +564,7 @@ abstract class Piwik_ArchiveProcessing
         if (!empty($archiveBaseName)) {
             $archiveNameParts[] = $archiveBaseName;
             
-            if ($plugin == 'all') {
+            if ($flagArchiveAsAllPlugins) {
                 $archiveNameParts[] = 'all';
             }
         } else if (!self::shouldProcessReportsAllPluginsFor($segment, $periodType)) {
