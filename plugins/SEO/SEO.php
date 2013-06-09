@@ -30,7 +30,7 @@ class Piwik_SEO extends Piwik_Plugin
     const REFERRER_DOMAINS_COUNT = 'referrer_domains';
     
     /**
-     * TODO
+     * The name of archives that hold SEO metric data.
      */
     const SEO_STATS_ARCHIVE_NAME = 'SEO';
     
@@ -195,23 +195,13 @@ class Piwik_SEO extends Piwik_Plugin
     }
     
     /**
-     * Gets the list of site IDs for whom SEO metrics should be queried and archived.
-     * We don't do it for all sites since making that many HTTP requests can take too
-     * much time.
-     */
-    private function shouldArchiveForSite($idSite)
-    {
-        // if the browser initiated archiving, then we always archive
-        if (!Piwik_Common::isPhpCliMode()) {
-            return true;
-        }
-        
-        $idSitesToArchiveFor = $this->getSitesToArchiveSEOMetricsFor();
-        return in_array($idSite, $idSitesToArchiveFor);
-    }
-    
-    /**
-     * TODO
+     * Returns the IDs of sites that we should query and archive SEO metrics for. We do
+     * not want to archive SEO metrics for hundreds or thousands of websites since it
+     * requires 6 HTTP requests per site to get those SEO metrics.
+     * 
+     * The limit is defined by the 'seo_max_sites_to_archive_metrics_for' config option.
+     * 
+     * @return array
      */
     private function getSitesToArchiveSEOMetricsFor()
     {
@@ -221,7 +211,6 @@ class Piwik_SEO extends Piwik_Plugin
         $allIdSites = Piwik_SitesManager_API::getInstance()->getAllSitesId();
         return array_slice($allIdSites, 0, $seoMaxSitesToArchiveMetricsFor);
     }
-    //TODO: go through all new functions and check if they are still used.    
     
     /**
      * Translates SEO metric name using a set of translations. Used as datatable
