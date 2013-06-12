@@ -584,7 +584,8 @@ abstract class Piwik_ArchiveProcessing
      */
     public static function getPluginFromArchiveName($archiveName)
     {
-        $lastPart = substr($archiveName, strrpos($archiveName, '.') + 1);
+        $parts = explode('.', $archiveName);
+        $lastPart = end($parts);
         
         if (Piwik_PluginsManager::getInstance()->isPluginActivated($lastPart)) {
             return $lastPart;
