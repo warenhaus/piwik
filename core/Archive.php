@@ -774,7 +774,9 @@ class Piwik_Archive
                         $idArchive = $processing->getIdArchive();
                     }
                     
-                    if (!$processing->isThereSomeVisits()) {
+                    if (!$processing->isThereSomeVisits()
+                        || $idArchive === false
+                    ) {
                         continue;
                     }
                     

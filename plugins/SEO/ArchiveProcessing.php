@@ -62,10 +62,6 @@ class Piwik_SEO_ArchiveProcessing extends Piwik_ArchiveProcessing
 
     protected function compute()
     {
-        if (!$this->doArchiving) {
-            return;
-        }
-        
         $this->rankChecker = self::makeRankChecker($this->site->getMainUrl(), $this->period->getDateEnd());
         
         $this->stats = $this->rankChecker->getAllStats();
@@ -87,7 +83,9 @@ class Piwik_SEO_ArchiveProcessing extends Piwik_ArchiveProcessing
      */
     public function launchArchiving()
     {
-        parent::launchArchiving();
+        if ($this->doArchiving) {
+            parent::launchArchiving();
+        }
         return $this->stats;
     }
     
