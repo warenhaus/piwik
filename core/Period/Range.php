@@ -283,7 +283,7 @@ class Range extends Period
                 $endDateIsEarlierThanToday = $endDate->isEarlier($this->today); // false
 
                 $isSame = $endOfWeek->toString() == $endDate->toString();
-                $isLaterEndOfWeek = $isLaterEndOfWeek || $isSame;
+                $isLaterEndOfWeek = $isLaterEndOfWeek || ($isSame && $endDate->isLater($this->today));
 
                 $y = $startDate->addPeriod(2, 'month')->setDay(1);
                 $useMonthsNextIteration = $y->isEarlier($endDate);
