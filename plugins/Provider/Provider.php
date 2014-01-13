@@ -154,7 +154,7 @@ class Provider extends \Piwik\Plugin
     private function getCleanHostname($hostname)
     {
         $extToExclude = array(
-            'com', 'net', 'org', 'co'
+            'com', 'net', 'org', 'edu', 'info', 'int', 'mil', 'co', 'ac', 'gv', 'gov', 'or', 'fgov', 'gc', 'ne'
         );
 
         $off = strrpos($hostname, '.');
