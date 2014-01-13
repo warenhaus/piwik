@@ -29,7 +29,7 @@ function getHostnameName($in)
         return "IP";
     }
     if (($positionDot = strpos($in, '.')) !== false) {
-        return ucfirst(substr($in, 0, $positionDot));
+        return ucfirst($in);  // show more than base domain. Was: return ucfirst(substr($in, 0, $positionDot));
     }
     return $in;
 }
